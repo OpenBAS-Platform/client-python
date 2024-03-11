@@ -338,12 +338,12 @@ class OpenBAS:
         return self.http_request("delete", path, **kwargs)
 
     def http_list(
-            self,
-            path: str,
-            query_data: Optional[Dict[str, Any]] = None,
-            *,
-            iterator: Optional[bool] = None,
-            **kwargs: Any,
+        self,
+        path: str,
+        query_data: Optional[Dict[str, Any]] = None,
+        *,
+        iterator: Optional[bool] = None,
+        **kwargs: Any,
     ) -> Union["OpenBASList", List[Dict[str, Any]]]:
         query_data = query_data or {}
 

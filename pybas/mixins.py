@@ -1,5 +1,15 @@
 import enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Type, Union, List
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import requests
 
@@ -48,9 +58,7 @@ class GetMixin(HeadMixin, _RestManagerBase):
     openbas: pybas.OpenBAS
 
     @exc.on_http_error(exc.OpenBASGetError)
-    def get(
-        self, id: Union[str, int], **kwargs: Any
-    ) -> base.RESTObject:
+    def get(self, id: Union[str, int], **kwargs: Any) -> base.RESTObject:
         if isinstance(id, str):
             id = utils.EncodedId(id)
         path = f"{self.path}/{id}"
@@ -187,7 +195,7 @@ class CreateMixin(_RestManagerBase):
 
     @exc.on_http_error(exc.OpenBASCreateError)
     def create(
-            self, data: Optional[Dict[str, Any]] = None, **kwargs: Any
+        self, data: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> base.RESTObject:
         if data is None:
             data = {}

@@ -19,4 +19,4 @@ class ContractVariable:
     label: str
     type: VariableType
     cardinality: ContractCardinality
-    children: List['ContractVariable'] = field(default_factory=list)
+    children: List["ContractVariable"] = field(default_factory=list)

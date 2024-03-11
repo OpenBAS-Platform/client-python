@@ -1,5 +1,5 @@
 from pybas.base import RESTManager, RESTObject
-from pybas.mixins import GetMixin, CreateMixin, ListMixin, UpdateMixin
+from pybas.mixins import CreateMixin, GetMixin, ListMixin, UpdateMixin
 from pybas.utils import RequiredOptional
 
 

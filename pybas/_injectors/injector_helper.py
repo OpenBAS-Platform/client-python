@@ -5,7 +5,7 @@ import tempfile
 import threading
 import time
 import traceback
-from typing import Dict, List, Optional, Union, Callable
+from typing import Callable, Dict, List, Optional, Union
 
 import pika
 
@@ -70,12 +70,12 @@ def ssl_verify_locations(ssl_context, certdata):
 
 
 def get_config_variable(
-        env_var: str,
-        yaml_path: List,
-        config: Dict = {},
-        isNumber: Optional[bool] = False,
-        default=None,
-        required=False,
+    env_var: str,
+    yaml_path: List,
+    config: Dict = {},
+    isNumber: Optional[bool] = False,
+    default=None,
+    required=False,
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -104,9 +104,9 @@ def get_config_variable(
         return int(result)
 
     if (
-            required
-            and default is None
-            and (result is None or (isinstance(result, str) and len(result) == 0))
+        required
+        and default is None
+        and (result is None or (isinstance(result, str) and len(result) == 0))
     ):
         raise ValueError("The configuration " + env_var + " is required")
 
@@ -146,11 +146,11 @@ def create_mq_ssl_context(config) -> ssl.SSLContext:
 
 class ListenQueue(threading.Thread):
     def __init__(
-            self,
-            helper,
-            config: Dict,
-            injector_config: Dict,
-            callback,
+        self,
+        helper,
+        config: Dict,
+        injector_config: Dict,
+        callback,
     ) -> None:
         threading.Thread.__init__(self)
         self.pika_credentials = None
@@ -244,9 +244,7 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(
-            self, api, config
-    ) -> None:
+    def __init__(self, api, config) -> None:
         threading.Thread.__init__(self)
         self.api = api
         self.config = config

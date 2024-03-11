@@ -1,8 +1,9 @@
+import dataclasses
 import email.message
-import dataclasses, json
+import json
 import logging
 import urllib.parse
-from typing import Any, Callable, Dict, Iterator, Literal, Optional, Union, List, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
 import requests
 
@@ -110,10 +111,10 @@ class RequiredOptional:
     exclusive: Tuple[str, ...] = ()
 
     def validate_attrs(
-            self,
-            *,
-            data: Dict[str, Any],
-            excludes: Optional[List[str]] = None,
+        self,
+        *,
+        data: Dict[str, Any],
+        excludes: Optional[List[str]] = None,
     ) -> None:
         if excludes is None:
             excludes = []
