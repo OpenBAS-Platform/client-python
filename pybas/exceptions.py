@@ -55,6 +55,18 @@ class OpenBASGetError(OpenBASError):
     pass
 
 
+class OpenBASUpdateError(OpenBASError):
+    pass
+
+
+class OpenBASListError(OpenBASError):
+    pass
+
+
+class OpenBASCreateError(OpenBASError):
+    pass
+
+
 # For an explanation of how these type-hints work see:
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 #
@@ -83,4 +95,7 @@ __all__ = [
     "OpenBASParsingError",
     "RedirectError",
     "OpenBASHeadError",
+    "OpenBASListError",
+    "OpenBASGetError",
+    "OpenBASUpdateError",
 ]

@@ -19,20 +19,6 @@ __all__ = [
 
 
 class RESTObject:
-    """Represents an object built from server data.
-
-    It holds the attributes know from the server, and the updated attributes in
-    another. This allows smart updates, if the object allows it.
-
-    You can redefine ``_id_attr`` in child classes to specify which attribute
-    must be used as the unique ID. ``None`` means that the object can be updated
-    without ID in the url.
-
-    Likewise, you can define a ``_repr_attr`` in subclasses to specify which
-    attribute should be added as a human-readable identifier when called in the
-    object's ``__repr__()`` method.
-    """
-
     _id_attr: Optional[str] = "id"
     _attrs: Dict[str, Any]
     _created_from_list: bool  # Indicates if object was created from a list() action
@@ -40,7 +26,6 @@ class RESTObject:
     _parent_attrs: Dict[str, Any]
     _repr_attr: Optional[str] = None
     _updated_attrs: Dict[str, Any]
-    _lazy: bool
     manager: "RESTManager"
 
     def __init__(
@@ -49,7 +34,6 @@ class RESTObject:
         attrs: Dict[str, Any],
         *,
         created_from_list: bool = False,
-        lazy: bool = False,
     ) -> None:
         if not isinstance(attrs, dict):
             raise OpenBASParsingError(
@@ -64,7 +48,6 @@ class RESTObject:
                 "_updated_attrs": {},
                 "_module": importlib.import_module(self.__module__),
                 "_created_from_list": created_from_list,
-                "_lazy": lazy,
             }
         )
         self.__dict__["_parent_attrs"] = self.manager.parent_attrs
@@ -103,12 +86,6 @@ class RESTObject:
                 f"only a subset of the data may be present. To ensure "
                 f"all data is present get the object using a "
                 f"get(object.id) call. For more details, see:"
-            )
-        elif self._lazy:
-            message = f"{message}\n\n" + textwrap.fill(
-                f"If you tried to access object attributes returned from the server, "
-                f"note that {self.__class__!r} was created as a `lazy` object and was "
-                f"not initialized with any data."
             )
         raise AttributeError(message)
 

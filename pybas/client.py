@@ -19,6 +19,9 @@ class OpenBAS:
         url: str,
         token: str,
         timeout: Optional[float] = None,
+        per_page: Optional[int] = None,
+        pagination: Optional[str] = None,
+        order_by: Optional[str] = None,
         ssl_verify: Union[bool, str] = True,
         **kwargs: Any,
     ) -> None:
@@ -42,10 +45,16 @@ class OpenBAS:
         self._auth = _backends.TokenAuth(token)
         self.session = self._backend.client
 
+        self.per_page = per_page
+        self.pagination = pagination
+        self.order_by = order_by
+
         # Import all apis
         from pybas import _apis
 
         self.me = _apis.MeManager(self)
+        self.organization = _apis.OrganizationManager(self)
+        self.injector = _apis.InjectorManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:
@@ -263,6 +272,93 @@ class OpenBAS:
                 error_message="Failed to parse the server message"
             ) from e
         return result
+
+    def http_put(
+        self,
+        path: str,
+        query_data: Optional[Dict[str, Any]] = None,
+        post_data: Optional[Union[Dict[str, Any], bytes, BinaryIO]] = None,
+        raw: bool = False,
+        files: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Union[Dict[str, Any], requests.Response]:
+        query_data = query_data or {}
+        post_data = post_data or {}
+
+        result = self.http_request(
+            "put",
+            path,
+            query_data=query_data,
+            post_data=post_data,
+            files=files,
+            raw=raw,
+            **kwargs,
+        )
+        try:
+            json_result = result.json()
+            if TYPE_CHECKING:
+                assert isinstance(json_result, dict)
+            return json_result
+        except Exception as e:
+            raise exceptions.OpenBASParsingError(
+                error_message="Failed to parse the server message"
+            ) from e
+
+    def http_patch(
+        self,
+        path: str,
+        *,
+        query_data: Optional[Dict[str, Any]] = None,
+        post_data: Optional[Union[Dict[str, Any], bytes]] = None,
+        raw: bool = False,
+        **kwargs: Any,
+    ) -> Union[Dict[str, Any], requests.Response]:
+        query_data = query_data or {}
+        post_data = post_data or {}
+
+        result = self.http_request(
+            "patch",
+            path,
+            query_data=query_data,
+            post_data=post_data,
+            raw=raw,
+            **kwargs,
+        )
+        try:
+            json_result = result.json()
+            if TYPE_CHECKING:
+                assert isinstance(json_result, dict)
+            return json_result
+        except Exception as e:
+            raise exceptions.OpenBASParsingError(
+                error_message="Failed to parse the server message"
+            ) from e
+
+    def http_delete(self, path: str, **kwargs: Any) -> requests.Response:
+        return self.http_request("delete", path, **kwargs)
+
+    def http_list(
+            self,
+            path: str,
+            query_data: Optional[Dict[str, Any]] = None,
+            *,
+            iterator: Optional[bool] = None,
+            **kwargs: Any,
+    ) -> Union["OpenBASList", List[Dict[str, Any]]]:
+        query_data = query_data or {}
+
+        url = self._build_url(path)
+
+        page = kwargs.get("page")
+
+        if iterator and page is None:
+            # Generator requested
+            return OpenBASList(self, url, query_data, **kwargs)
+
+        # pagination requested, we return a list
+        bas_list = OpenBASList(self, url, query_data, get_next=False, **kwargs)
+        items = list(bas_list)
+        return items
 
 
 class OpenBASList:
