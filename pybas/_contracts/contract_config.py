@@ -59,7 +59,7 @@ class ContractElement(ABC):
     label: str
     type: str = field(default="", init=False)
     mandatoryGroups: List[str] = None
-    linkedFields: List[LinkedFieldModel] = field(default_factory=list)
+    linkedFields: List["ContractElement"] = field(default_factory=list)
     linkedValues: List[str] = field(default_factory=list)
     mandatory: bool = False
 
@@ -123,6 +123,21 @@ class ContractText(ContractCardinalityElement):
     @property
     def get_type(self) -> str:
         return ContractType.Text.value
+
+
+@dataclass
+class ContractTuple(ContractCardinalityElement):
+    def __post_init__(self):
+        super().__post_init__()
+        self.cardinality = ContractCardinality.Multiple
+
+    attachmentKey: str = None
+    contractAttachment: bool = attachmentKey is not None
+    tupleFilePrefix: str = "file :: "
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.Tuple.value
 
 
 @dataclass

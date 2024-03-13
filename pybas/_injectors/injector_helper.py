@@ -275,6 +275,7 @@ class OpenBASInjectorHelper:
         self.config = config
         self.injector_config = injector_config
         self.connect_run_and_terminate = False
+        self.api.injector.create(self.config)
         # Start ping thread
         if not self.connect_run_and_terminate:
             self.ping = PingAlive(
@@ -284,7 +285,7 @@ class OpenBASInjectorHelper:
             self.ping.start()
         self.listen_queue = None
 
-    def listen(self, message_callback: Callable[[Dict], str]) -> None:
+    def listen(self, message_callback: Callable[[Dict], None]) -> None:
         self.listen_queue = ListenQueue(
             self,
             self.config,
