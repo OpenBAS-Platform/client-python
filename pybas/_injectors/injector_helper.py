@@ -1,5 +1,6 @@
 import json
 import os
+import sched
 import ssl
 import tempfile
 import threading
@@ -244,8 +245,9 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, api, config) -> None:
+    def __init__(self, api, config, ping_type) -> None:
         threading.Thread.__init__(self)
+        self.ping_type = ping_type
         self.api = api
         self.config = config
         self.in_error = False
@@ -254,8 +256,11 @@ class PingAlive(threading.Thread):
     def ping(self) -> None:
         while not self.exit_event.is_set():
             try:
-                print("PingAlive running.")
-                self.api.injector.create(self.config)
+                if self.ping_type == "injector":
+                    print("PingAlive injector running.")
+                    self.api.injector.create(self.config)
+                else:
+                    print("PingAlive collector running.")
             except Exception as e:  # pylint: disable=broad-except
                 print(str(e))
             self.exit_event.wait(40)
@@ -269,6 +274,36 @@ class PingAlive(threading.Thread):
         self.exit_event.set()
 
 
+class OpenBASCollectorHelper:
+    def __init__(self, api: OpenBAS, config: Dict, collector_config: Dict) -> None:
+        self.api = api
+        self.config = config
+        self.collector_config = collector_config
+        self.connect_run_and_terminate = False
+        # self.api.injector.create(self.config)
+        self.scheduler = sched.scheduler(time.time, time.sleep)
+        # Start ping thread
+        if not self.connect_run_and_terminate:
+            self.ping = PingAlive(self.api, self.config, "collector")
+            self.ping.start()
+        self.listen_queue = None
+
+    def _schedule(self, scheduler, message_callback, delay):
+        # Execute
+        message_callback()
+        # Then schedule the next execution
+        scheduler.enter(delay, 1, self._schedule, (scheduler, message_callback, delay))
+
+    def schedule(self, message_callback, delay):
+        # Start execution directly
+        message_callback()
+        # Then schedule the next execution
+        self.scheduler.enter(
+            delay, 1, self._schedule, (self.scheduler, message_callback, delay)
+        )
+        self.scheduler.run()
+
+
 class OpenBASInjectorHelper:
     def __init__(self, api: OpenBAS, config: Dict, injector_config: Dict) -> None:
         self.api = api
@@ -276,12 +311,10 @@ class OpenBASInjectorHelper:
         self.injector_config = injector_config
         self.connect_run_and_terminate = False
         self.api.injector.create(self.config)
+        self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start ping thread
         if not self.connect_run_and_terminate:
-            self.ping = PingAlive(
-                self.api,
-                self.config,
-            )
+            self.ping = PingAlive(self.api, self.config, "injector")
             self.ping.start()
         self.listen_queue = None
 

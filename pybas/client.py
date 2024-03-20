@@ -56,6 +56,8 @@ class OpenBAS:
         self.organization = _apis.OrganizationManager(self)
         self.injector = _apis.InjectorManager(self)
         self.inject = _apis.InjectManager(self)
+        self.kill_chain_phase = _apis.KillChainPhaseManager(self)
+        self.attack_pattern = _apis.AttackPatternManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:
