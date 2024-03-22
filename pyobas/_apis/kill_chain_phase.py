@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
-from pybas import exceptions as exc
-from pybas.base import RESTManager, RESTObject
+from pyobas import exceptions as exc
+from pyobas.base import RESTManager, RESTObject
 
 
 class KillChainPhase(RESTObject):

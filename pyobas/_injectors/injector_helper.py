@@ -10,7 +10,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 import pika
 
-from pybas import OpenBAS
+from pyobas import OpenBAS
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]

@@ -7,7 +7,7 @@ from requests.auth import AuthBase
 from requests.structures import CaseInsensitiveDict
 from requests_toolbelt.multipart.encoder import MultipartEncoder  # type: ignore
 
-from pybas._backends import protocol
+from pyobas._backends import protocol
 
 
 class Auth:

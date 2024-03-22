@@ -1,6 +1,6 @@
 from typing import List
 
-from pybas._contracts.contract_config import ContractElement
+from pyobas._contracts.contract_config import ContractElement
 
 
 class ContractBuilder:

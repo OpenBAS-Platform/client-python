@@ -3,11 +3,11 @@ from urllib import parse
 
 import requests
 
-from pybas import _backends, exceptions, utils
-from pybas._version import __version__  # noqa: F401
+from pyobas import _backends, exceptions, utils
+from pyobas._version import __version__  # noqa: F401
 
 REDIRECT_MSG = (
-    "pybas detected a {status_code} ({reason!r}) redirection. You must update "
+    "pyobas detected a {status_code} ({reason!r}) redirection. You must update "
     "your OpenBVAS URL to the correct URL to avoid issues. The redirection was from: "
     "{source!r} to {target!r}"
 )
@@ -35,7 +35,7 @@ class OpenBAS:
         self.timeout = timeout
         #: Headers that will be used in request to OpenBAS
         self.headers = {
-            "User-Agent": "pybas/" + __version__,
+            "User-Agent": "pyobas/" + __version__,
             "Authorization": "Bearer " + token,
         }
         #: Whether SSL certificates should be validated
@@ -50,7 +50,7 @@ class OpenBAS:
         self.order_by = order_by
 
         # Import all apis
-        from pybas import _apis
+        from pyobas import _apis
 
         self.me = _apis.MeManager(self)
         self.organization = _apis.OrganizationManager(self)

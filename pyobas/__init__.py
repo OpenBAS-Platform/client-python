@@ -1,4 +1,4 @@
-from pybas._version import (  # noqa: F401
+from pyobas._version import (  # noqa: F401
     __author__,
     __copyright__,
     __email__,
@@ -6,8 +6,8 @@ from pybas._version import (  # noqa: F401
     __title__,
     __version__,
 )
-from pybas.client import OpenBAS  # noqa: F401
-from pybas.exceptions import *  # noqa: F401,F403
+from pyobas.client import OpenBAS  # noqa: F401
+from pyobas.exceptions import *  # noqa: F401,F403
 
 __all__ = [
     "__author__",

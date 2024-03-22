@@ -6,7 +6,7 @@ import textwrap
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Type, Union
 
-from pybas.exceptions import OpenBASParsingError
+from pyobas.exceptions import OpenBASParsingError
 
 from . import utils
 from .client import OpenBAS, OpenBASList

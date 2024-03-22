@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
 
-from pybas._contracts.contract_utils import ContractCardinality, ContractVariable
-from pybas._contracts.variable_helper import VariableHelper
+from pyobas._contracts.contract_utils import ContractCardinality, ContractVariable
+from pyobas._contracts.variable_helper import VariableHelper
 
 
 class SupportedLanguage(str, Enum):

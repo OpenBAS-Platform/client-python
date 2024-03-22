@@ -1,7 +1,7 @@
 from typing import Any, cast
 
-from pybas.base import RESTManager, RESTObject
-from pybas.mixins import GetWithoutIdMixin, UpdateMixin
+from pyobas.base import RESTManager, RESTObject
+from pyobas.mixins import GetWithoutIdMixin, UpdateMixin
 
 
 class Me(RESTObject):

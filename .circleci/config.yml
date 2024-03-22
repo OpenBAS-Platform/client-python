@@ -62,7 +62,7 @@ jobs:
           name: check version
           command: |
             package_version="$(
-                python3 -c 'import pybas; print(pybas.__version__)'
+                python3 -c 'import pyobas; print(pyobas.__version__)'
             )"
             [ "${CIRCLE_TAG}" = "${package_version}" ] \
               || printf "Version mismatch: %s is not equal to %s\n" \

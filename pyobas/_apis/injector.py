@@ -1,6 +1,6 @@
-from pybas.base import RESTManager, RESTObject
-from pybas.mixins import CreateMixin, GetMixin, ListMixin, UpdateMixin
-from pybas.utils import RequiredOptional
+from pyobas.base import RESTManager, RESTObject
+from pyobas.mixins import CreateMixin, GetMixin, ListMixin, UpdateMixin
+from pyobas.utils import RequiredOptional
 
 
 class Injector(RESTObject):

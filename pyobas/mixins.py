@@ -13,10 +13,10 @@ from typing import (
 
 import requests
 
-import pybas
-from pybas import base
-from pybas import exceptions as exc
-from pybas import utils
+import pyobas
+from pyobas import base
+from pyobas import exceptions as exc
+from pyobas import utils
 
 __all__ = [
     "GetMixin",
@@ -55,7 +55,7 @@ class GetMixin(HeadMixin, _RestManagerBase):
     _parent: Optional[base.RESTObject]
     _parent_attrs: Dict[str, Any]
     _path: Optional[str]
-    openbas: pybas.OpenBAS
+    openbas: pyobas.OpenBAS
 
     @exc.on_http_error(exc.OpenBASGetError)
     def get(self, id: Union[str, int], **kwargs: Any) -> base.RESTObject:
@@ -78,7 +78,7 @@ class GetWithoutIdMixin(HeadMixin, _RestManagerBase):
     _parent: Optional[base.RESTObject]
     _parent_attrs: Dict[str, Any]
     _path: Optional[str]
-    openbas: pybas.OpenBAS
+    openbas: pyobas.OpenBAS
 
     @exc.on_http_error(exc.OpenBASGetError)
     def get(self, **kwargs: Any) -> base.RESTObject:
@@ -99,7 +99,7 @@ class ListMixin(HeadMixin, _RestManagerBase):
     _parent: Optional[base.RESTObject]
     _parent_attrs: Dict[str, Any]
     _path: Optional[str]
-    openbas: pybas.OpenBAS
+    openbas: pyobas.OpenBAS
 
     @exc.on_http_error(exc.OpenBASListError)
     def list(self, **kwargs: Any) -> Union[base.RESTObjectList, List[base.RESTObject]]:
@@ -140,7 +140,7 @@ class UpdateMixin(_RestManagerBase):
     _parent_attrs: Dict[str, Any]
     _path: Optional[str]
     _update_method: UpdateMethod = UpdateMethod.PUT
-    openbas: pybas.OpenBAS
+    openbas: pyobas.OpenBAS
 
     def _get_update_method(
         self,
@@ -191,7 +191,7 @@ class CreateMixin(_RestManagerBase):
     _parent: Optional[base.RESTObject]
     _parent_attrs: Dict[str, Any]
     _path: Optional[str]
-    openbas: pybas.OpenBAS
+    openbas: pyobas.OpenBAS
 
     @exc.on_http_error(exc.OpenBASCreateError)
     def create(
