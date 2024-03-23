@@ -21,4 +21,4 @@ __all__ = [
     "__version__",
     "OpenBAS",
 ]
-__all__.extend(exceptions.__all__)
+__all__.extend(exceptions.__all__)  # noqa: F405
