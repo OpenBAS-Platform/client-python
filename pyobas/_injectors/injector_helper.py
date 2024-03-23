@@ -227,7 +227,7 @@ class ListenQueue(threading.Thread):
                     queue=self.queue_name, on_message_callback=self._process_message
                 )
                 self.channel.start_consuming()
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 try:
                     self.pika_connection.close()
                 except Exception as errInException:
