@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+__version__ = "4.0.0"
+
 from pyobas._version import (  # noqa: F401
     __author__,
     __copyright__,

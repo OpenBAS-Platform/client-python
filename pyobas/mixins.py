@@ -173,9 +173,9 @@ class UpdateMixin(_RestManagerBase):
         else:
             path = f"{self.path}/{utils.EncodedId(id)}"
 
-        excludes = []
-        if self._obj_cls is not None and self._obj_cls._id_attr is not None:
-            excludes = [self._obj_cls._id_attr]
+        # excludes = []
+        # if self._obj_cls is not None and self._obj_cls._id_attr is not None:
+        #    excludes = [self._obj_cls._id_attr]
         # self._update_attrs.validate_attrs(data=new_data, excludes=excludes)
         http_method = self._get_update_method()
         result = http_method(path, post_data=new_data, **kwargs)

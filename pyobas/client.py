@@ -169,7 +169,7 @@ class OpenBAS:
         send_data = self._backend.prepare_send_data(files, post_data, raw)
         opts["headers"]["Content-type"] = send_data.content_type
 
-        cur_retries = 0
+        # cur_retries = 0
         while True:
             # noinspection PyTypeChecker
             result = self._backend.http_request(
