@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
@@ -5,6 +6,7 @@ from typing import List
 
 from pyobas._contracts.contract_utils import ContractCardinality, ContractVariable
 from pyobas._contracts.variable_helper import VariableHelper
+from utils import EnhancedJSONEncoder
 
 
 class SupportedLanguage(str, Enum):
@@ -123,6 +125,14 @@ class ContractText(ContractCardinalityElement):
     @property
     def get_type(self) -> str:
         return ContractType.Text.value
+
+
+def prepare_contracts(contracts):
+    return list(map(lambda c: {
+        "contract_id": c.contract_id,
+        "contract_labels": c.label,
+        "contract_content": json.dumps(c, cls=EnhancedJSONEncoder)
+    }, contracts))
 
 
 @dataclass
