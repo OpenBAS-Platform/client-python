@@ -9,6 +9,7 @@ import traceback
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
+import yaml
 
 from pyobas import OpenBAS
 
@@ -148,7 +149,6 @@ def create_mq_ssl_context(config) -> ssl.SSLContext:
 class ListenQueue(threading.Thread):
     def __init__(
         self,
-        helper,
         config: Dict,
         injector_config: Dict,
         callback,
@@ -161,13 +161,13 @@ class ListenQueue(threading.Thread):
 
         self.callback = callback
         self.config = config
-        self.host = injector_config["connection"]["host"]
-        self.vhost = injector_config["connection"]["vhost"]
-        self.use_ssl = injector_config["connection"]["use_ssl"]
-        self.port = injector_config["connection"]["port"]
-        self.user = injector_config["connection"]["user"]
-        self.password = injector_config["connection"]["pass"]
-        self.queue_name = injector_config["listen"]
+        self.host = injector_config.connection["host"]
+        self.vhost = injector_config.connection["vhost"]
+        self.use_ssl = injector_config.connection["use_ssl"]
+        self.port = injector_config.connection["port"]
+        self.user = injector_config.connection["user"]
+        self.password = injector_config.connection["pass"]
+        self.queue_name = injector_config.listen
         self.exit_event = threading.Event()
         self.thread = None
 
@@ -274,6 +274,32 @@ class PingAlive(threading.Thread):
         self.exit_event.set()
 
 
+class OpenBASConfigHelper:
+    def __init__(self, base_path, variables: Dict):
+        config_file_path = os.path.dirname(os.path.abspath(base_path)) + "/config.yml"
+        self.file_config = (
+            yaml.load(open(config_file_path), Loader=yaml.FullLoader)
+            if os.path.isfile(config_file_path)
+            else {}
+        )
+        self.variables = variables
+
+    def get_conf(self, variable, is_number=None, default=None, required=None):
+        var = self.variables.get(variable)
+        # If direct variable
+        if var.get("data") is not None:
+            return var.get("data")
+        # Else if file or env variable
+        return get_config_variable(
+            env_var=var["env"],
+            yaml_path=var["file_path"],
+            config=self.file_config,
+            isNumber=is_number,
+            default=default,
+            required=required,
+        )
+
+
 class OpenBASCollectorHelper:
     def __init__(self, api: OpenBAS, config: Dict, collector_config: Dict) -> None:
         self.api = api
@@ -305,12 +331,20 @@ class OpenBASCollectorHelper:
 
 
 class OpenBASInjectorHelper:
-    def __init__(self, api: OpenBAS, config: Dict, injector_config: Dict) -> None:
-        self.api = api
-        self.config = config
-        self.injector_config = injector_config
+    def __init__(self, config: OpenBASConfigHelper) -> None:
+        self.api = OpenBAS(
+            url=config.get_conf("openbas_url"),
+            token=config.get_conf("openbas_token"),
+        )
+        # Get the mq configuration from api
+        self.config = {
+            "injector_id": config.get_conf("injector_id"),
+            "injector_name": config.get_conf("injector_name"),
+            "injector_type": config.get_conf("injector_type"),
+            "injector_contracts": config.get_conf("injector_contracts"),
+        }
+        self.injector_config = self.api.injector.create(self.config)
         self.connect_run_and_terminate = False
-        self.api.injector.create(self.config)
         self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start ping thread
         if not self.connect_run_and_terminate:
@@ -320,7 +354,6 @@ class OpenBASInjectorHelper:
 
     def listen(self, message_callback: Callable[[Dict], None]) -> None:
         self.listen_queue = ListenQueue(
-            self,
             self.config,
             self.injector_config,
             message_callback,
