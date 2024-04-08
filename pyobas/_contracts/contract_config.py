@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
 
-from utils import EnhancedJSONEncoder
-
+from pyobas import utils
 from pyobas._contracts.contract_utils import ContractCardinality, ContractVariable
 from pyobas._contracts.variable_helper import VariableHelper
 
@@ -138,7 +137,7 @@ def prepare_contracts(contracts):
                 "contract_id": c.contract_id,
                 "contract_labels": c.label,
                 "contract_attack_patterns": c.attack_patterns,
-                "contract_content": json.dumps(c, cls=EnhancedJSONEncoder),
+                "contract_content": json.dumps(c, cls=utils.EnhancedJSONEncoder),
             },
             contracts,
         )
