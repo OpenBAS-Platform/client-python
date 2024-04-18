@@ -5,8 +5,8 @@ from enum import Enum
 from typing import List
 
 from pyobas import utils
-from pyobas._contracts.contract_utils import ContractCardinality, ContractVariable
-from pyobas._contracts.variable_helper import VariableHelper
+from pyobas.contracts.contract_utils import ContractCardinality, ContractVariable
+from pyobas.contracts.variable_helper import VariableHelper
 
 
 class SupportedLanguage(str, Enum):

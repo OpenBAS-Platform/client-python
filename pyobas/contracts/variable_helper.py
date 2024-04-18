@@ -1,4 +1,4 @@
-from pyobas._contracts.contract_utils import (
+from pyobas.contracts.contract_utils import (
     ContractCardinality,
     ContractVariable,
     VariableType,

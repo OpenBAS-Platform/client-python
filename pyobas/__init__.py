@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "4.0.0.dev1"
+__version__ = "4.0.0"
 
 from pyobas._version import (  # noqa: F401
     __author__,
@@ -9,9 +9,8 @@ from pyobas._version import (  # noqa: F401
     __title__,
 )
 from pyobas.client import OpenBAS  # noqa: F401
+from pyobas.contracts import *  # noqa: F401,F403,F405
 from pyobas.exceptions import *  # noqa: F401,F403,F405
-from pyobas.helpers import *  # noqa: F401,F403,F405
-from pyobas.utils import *  # noqa: F401,F403,F405
 
 __all__ = [
     "__author__",

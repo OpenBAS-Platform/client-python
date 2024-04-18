@@ -3,7 +3,7 @@ from urllib import parse
 
 import requests
 
-from pyobas import _backends, exceptions, utils
+from pyobas import exceptions, utils
 from pyobas._version import __version__  # noqa: F401
 
 REDIRECT_MSG = (
@@ -41,27 +41,30 @@ class OpenBAS:
         #: Whether SSL certificates should be validated
         self.ssl_verify = ssl_verify
 
-        self._backend = _backends.DefaultBackend(**kwargs)
-        self._auth = _backends.TokenAuth(token)
-        self.session = self._backend.client
+        # Import backends
+        from pyobas import backends
+
+        self.backend = backends.RequestsBackend(**kwargs)
+        self._auth = backends.TokenAuth(token)
+        self.session = self.backend.client
 
         self.per_page = per_page
         self.pagination = pagination
         self.order_by = order_by
 
         # Import all apis
-        from pyobas import _apis
+        from pyobas import apis
 
-        self.me = _apis.MeManager(self)
-        self.organization = _apis.OrganizationManager(self)
-        self.injector = _apis.InjectorManager(self)
-        self.collector = _apis.CollectorManager(self)
-        self.inject = _apis.InjectManager(self)
-        self.document = _apis.DocumentManager(self)
-        self.kill_chain_phase = _apis.KillChainPhaseManager(self)
-        self.attack_pattern = _apis.AttackPatternManager(self)
-        self.team = _apis.TeamManager(self)
-        self.user = _apis.UserManager(self)
+        self.me = apis.MeManager(self)
+        self.organization = apis.OrganizationManager(self)
+        self.injector = apis.InjectorManager(self)
+        self.collector = apis.CollectorManager(self)
+        self.inject = apis.InjectManager(self)
+        self.document = apis.DocumentManager(self)
+        self.kill_chain_phase = apis.KillChainPhaseManager(self)
+        self.attack_pattern = apis.AttackPatternManager(self)
+        self.team = apis.TeamManager(self)
+        self.user = apis.UserManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:
@@ -170,13 +173,13 @@ class OpenBAS:
             timeout = opts_timeout
 
         # We need to deal with json vs. data when uploading files
-        send_data = self._backend.prepare_send_data(files, post_data, raw)
+        send_data = self.backend.prepare_send_data(files, post_data, raw)
         opts["headers"]["Content-type"] = send_data.content_type
 
         # cur_retries = 0
         while True:
             # noinspection PyTypeChecker
-            result = self._backend.http_request(
+            result = self.backend.http_request(
                 method=verb,
                 url=url,
                 json=send_data.json,
