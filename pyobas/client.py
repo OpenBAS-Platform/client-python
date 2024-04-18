@@ -60,6 +60,8 @@ class OpenBAS:
         self.document = _apis.DocumentManager(self)
         self.kill_chain_phase = _apis.KillChainPhaseManager(self)
         self.attack_pattern = _apis.AttackPatternManager(self)
+        self.team = _apis.TeamManager(self)
+        self.user = _apis.UserManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:
@@ -172,6 +174,7 @@ class OpenBAS:
         opts["headers"]["Content-type"] = send_data.content_type
 
         # cur_retries = 0
+        print(send_data)
         while True:
             # noinspection PyTypeChecker
             result = self._backend.http_request(

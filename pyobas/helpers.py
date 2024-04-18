@@ -258,9 +258,9 @@ class PingAlive(threading.Thread):
         while not self.exit_event.is_set():
             try:
                 if self.ping_type == "injector":
-                    self.api.injector.create(self.config)
+                    self.api.injector.create(self.config, False)
                 else:
-                    self.api.collector.create(self.config)
+                    self.api.collector.create(self.config, False)
             except Exception as e:  # pylint: disable=broad-except
                 print(str(e))
             self.exit_event.wait(40)

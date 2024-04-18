@@ -202,7 +202,12 @@ class CreateMixin(_RestManagerBase):
         self._create_attrs.validate_attrs(data=data)
         # Handle specific URL for creation
         path = kwargs.pop("path", self.path)
-        files = {} if icon is None else {"icon": icon}
+        if icon:
+            files = {"icon": icon}
+        elif icon is False:
+            files = {}
+        else:
+            files = None
         server_data = self.openbas.http_post(
             path, post_data=data, files=files, **kwargs
         )
