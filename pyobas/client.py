@@ -174,7 +174,6 @@ class OpenBAS:
         opts["headers"]["Content-type"] = send_data.content_type
 
         # cur_retries = 0
-        print(send_data)
         while True:
             # noinspection PyTypeChecker
             result = self._backend.http_request(
