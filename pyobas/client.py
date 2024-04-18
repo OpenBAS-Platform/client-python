@@ -103,7 +103,7 @@ class OpenBAS:
         """
         if path.startswith("http://") or path.startswith("https://"):
             return path
-        return f"{self.url}{path}"
+        return f"{self.url}/api{path}"
 
     def _get_session_opts(self) -> Dict[str, Any]:
         return {
