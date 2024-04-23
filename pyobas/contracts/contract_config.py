@@ -136,7 +136,7 @@ def prepare_contracts(contracts):
             lambda c: {
                 "contract_id": c.contract_id,
                 "contract_labels": c.label,
-                "contract_attack_patterns": c.attack_patterns,
+                "contract_attack_patterns_external_ids": c.attack_patterns_external_ids,
                 "contract_content": json.dumps(c, cls=utils.EnhancedJSONEncoder),
             },
             contracts,
