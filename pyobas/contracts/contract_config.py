@@ -104,10 +104,10 @@ class Contract:
         ]
         + VariableHelper.uri_variables()
     )
-    attack_patterns: List[str] = field(default_factory=list)
+    attack_patterns_external_ids: List[str] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
-        self.attack_patterns.append(var)
+        self.attack_patterns_external_ids.append(var)
 
     def add_variable(self, var: ContractVariable):
         self.variables.append(var)
