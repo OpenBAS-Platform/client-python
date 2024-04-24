@@ -64,6 +64,7 @@ class ContractElement(ABC):
     linkedFields: List["ContractElement"] = field(default_factory=list)
     linkedValues: List[str] = field(default_factory=list)
     mandatory: bool = False
+    readOnly: bool = False
 
     @property
     @abstractmethod

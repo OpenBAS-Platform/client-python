@@ -11,5 +11,11 @@ class InjectorManager(GetMixin, ListMixin, CreateMixin, UpdateMixin, RESTManager
     _path = "/injectors"
     _obj_cls = Injector
     _create_attrs = RequiredOptional(
-        required=("injector_id", "injector_name", "injector_type", "injector_contracts")
+        required=(
+            "injector_id",
+            "injector_name",
+            "injector_type",
+            "injector_contracts",
+        ),
+        optional=("injector_custom_contracts", "injector_contract_template"),
     )

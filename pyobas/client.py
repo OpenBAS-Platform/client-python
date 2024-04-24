@@ -261,7 +261,6 @@ class OpenBAS:
     ) -> Union[Dict[str, Any], requests.Response]:
         query_data = query_data or {}
         post_data = post_data or {}
-
         result = self.http_request(
             "post",
             path,
