@@ -364,9 +364,6 @@ class OpenBASInjectorHelper:
             "injector_custom_contracts": config.get_conf(
                 "injector_custom_contracts", default=False
             ),
-            "injector_contract_template": config.get_conf(
-                "injector_contract_template", default=None
-            ),
         }
         icon_name = config.get_conf("injector_type") + ".png"
         injector_icon = (icon_name, icon, "image/png")

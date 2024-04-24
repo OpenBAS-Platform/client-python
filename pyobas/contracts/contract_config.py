@@ -29,6 +29,7 @@ class ContractType(str, Enum):
     Expectation: str = "expectation"
     Asset: str = "asset"
     AssetGroup: str = "asset-group"
+    Payload: str = "payload"
 
 
 class ExpectationType(str, Enum):
@@ -207,3 +208,27 @@ class ContractSelect(ContractCardinalityElement):
     @property
     def get_type(self) -> str:
         return ContractType.Select.value
+
+
+@dataclass
+class ContractAsset(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.Asset.value
+
+
+@dataclass
+class ContractAssetGroup(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.AssetGroup.value
+
+
+@dataclass
+class ContractPayload(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.Payload.value
