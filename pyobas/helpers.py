@@ -341,7 +341,6 @@ class OpenBASCollectorHelper:
             self.config_helper.get_conf("collector_id"),
             {"collector_last_execution": now},
         )
-
         # Then schedule the next execution
         self.scheduler.enter(
             delay, 1, self._schedule, (self.scheduler, message_callback, delay)

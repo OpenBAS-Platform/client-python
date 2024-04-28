@@ -78,7 +78,7 @@ class ContractElement(ABC):
 
 @dataclass
 class ContractCardinalityElement(ContractElement, ABC):
-    cardinality: ContractCardinality = ContractCardinality.One
+    cardinality: str = ContractCardinality.One
     defaultValue: List[str] = field(default_factory=list)
 
 
