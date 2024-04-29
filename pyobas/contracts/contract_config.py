@@ -107,6 +107,7 @@ class Contract:
         + VariableHelper.uri_variables()
     )
     attack_patterns_external_ids: List[str] = field(default_factory=list)
+    platforms: List[str] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
         self.attack_patterns_external_ids.append(var)
@@ -140,6 +141,7 @@ def prepare_contracts(contracts):
                 "contract_labels": c.label,
                 "contract_attack_patterns_external_ids": c.attack_patterns_external_ids,
                 "contract_content": json.dumps(c, cls=utils.EnhancedJSONEncoder),
+                "contract_platforms": c.platforms,
             },
             contracts,
         )
