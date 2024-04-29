@@ -80,6 +80,7 @@ def get_config_variable(
     default=None,
     required=False,
 ) -> Union[bool, int, None, str]:
+    print(default)
     """[summary]
 
     :param env_var: environment variable name
@@ -296,8 +297,8 @@ class OpenBASConfigHelper:
             env_var=var["env"],
             yaml_path=var["file_path"],
             config=self.file_config,
-            isNumber=is_number,
-            default=default,
+            isNumber=var["is_number"] if "is_number" in var else is_number,
+            default=var["default"] if "default" in var else default,
             required=required,
         )
 
