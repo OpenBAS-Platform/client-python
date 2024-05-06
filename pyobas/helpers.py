@@ -364,15 +364,6 @@ class OpenBASInjectorHelper:
             "injector_custom_contracts": config.get_conf(
                 "injector_custom_contracts", default=False
             ),
-            "injector_simulation_agent": config.get_conf(
-                "injector_simulation_agent", default=False
-            ),
-            "injector_simulation_agent_platforms": config.get_conf(
-                "injector_simulation_agent_platforms", default=None
-            ),
-            "injector_simulation_agent_doc": config.get_conf(
-                "injector_simulation_agent_doc", default=None
-            ),
             "injector_category": config.get_conf("injector_category", default=None),
         }
         icon_name = config.get_conf("injector_type") + ".png"
