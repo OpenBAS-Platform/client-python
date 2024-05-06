@@ -80,7 +80,6 @@ def get_config_variable(
     default=None,
     required=False,
 ) -> Union[bool, int, None, str]:
-    print(default)
     """[summary]
 
     :param env_var: environment variable name
