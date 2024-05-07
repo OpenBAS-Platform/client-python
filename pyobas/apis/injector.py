@@ -17,5 +17,9 @@ class InjectorManager(GetMixin, ListMixin, CreateMixin, UpdateMixin, RESTManager
             "injector_type",
             "injector_contracts",
         ),
-        optional=("injector_custom_contracts"),
+        optional=(
+            "injector_custom_contracts",
+            "injector_category",
+            "injector_executor_commands",
+        ),
     )
