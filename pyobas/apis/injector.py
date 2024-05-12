@@ -21,5 +21,6 @@ class InjectorManager(GetMixin, ListMixin, CreateMixin, UpdateMixin, RESTManager
             "injector_custom_contracts",
             "injector_category",
             "injector_executor_commands",
+            "injector_executor_clear_commands",
         ),
     )
