@@ -29,6 +29,7 @@ class ContractType(str, Enum):
     Expectation: str = "expectation"
     Asset: str = "asset"
     AssetGroup: str = "asset-group"
+    Payload: str = "payload"
 
 
 class ExpectationType(str, Enum):
@@ -64,6 +65,7 @@ class ContractElement(ABC):
     linkedFields: List["ContractElement"] = field(default_factory=list)
     linkedValues: List[str] = field(default_factory=list)
     mandatory: bool = False
+    readOnly: bool = False
 
     @property
     @abstractmethod
@@ -76,7 +78,7 @@ class ContractElement(ABC):
 
 @dataclass
 class ContractCardinalityElement(ContractElement, ABC):
-    cardinality: ContractCardinality = ContractCardinality.One
+    cardinality: str = ContractCardinality.One
     defaultValue: List[str] = field(default_factory=list)
 
 
@@ -106,6 +108,7 @@ class Contract:
     )
     attack_patterns_external_ids: List[str] = field(default_factory=list)
     is_atomic_testing: bool = True
+    platforms: List[str] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
         self.attack_patterns_external_ids.append(var)
@@ -139,6 +142,7 @@ def prepare_contracts(contracts):
                 "contract_labels": c.label,
                 "contract_attack_patterns_external_ids": c.attack_patterns_external_ids,
                 "contract_content": json.dumps(c, cls=utils.EnhancedJSONEncoder),
+                "contract_platforms": c.platforms,
             },
             contracts,
         )
@@ -207,3 +211,27 @@ class ContractSelect(ContractCardinalityElement):
     @property
     def get_type(self) -> str:
         return ContractType.Select.value
+
+
+@dataclass
+class ContractAsset(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.Asset.value
+
+
+@dataclass
+class ContractAssetGroup(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.AssetGroup.value
+
+
+@dataclass
+class ContractPayload(ContractCardinalityElement):
+
+    @property
+    def get_type(self) -> str:
+        return ContractType.Payload.value

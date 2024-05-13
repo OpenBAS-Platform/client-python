@@ -286,6 +286,8 @@ class OpenBASConfigHelper:
 
     def get_conf(self, variable, is_number=None, default=None, required=None):
         var = self.variables.get(variable)
+        if var is None:
+            return default
         # If direct variable
         if var.get("data") is not None:
             return var.get("data")
@@ -294,8 +296,8 @@ class OpenBASConfigHelper:
             env_var=var["env"],
             yaml_path=var["file_path"],
             config=self.file_config,
-            isNumber=is_number,
-            default=default,
+            isNumber=var["is_number"] if "is_number" in var else is_number,
+            default=var["default"] if "default" in var else default,
             required=required,
         )
 
@@ -339,7 +341,6 @@ class OpenBASCollectorHelper:
             self.config_helper.get_conf("collector_id"),
             {"collector_last_execution": now},
         )
-
         # Then schedule the next execution
         self.scheduler.enter(
             delay, 1, self._schedule, (self.scheduler, message_callback, delay)
@@ -359,6 +360,16 @@ class OpenBASInjectorHelper:
             "injector_name": config.get_conf("injector_name"),
             "injector_type": config.get_conf("injector_type"),
             "injector_contracts": config.get_conf("injector_contracts"),
+            "injector_custom_contracts": config.get_conf(
+                "injector_custom_contracts", default=False
+            ),
+            "injector_category": config.get_conf("injector_category", default=None),
+            "injector_executor_commands": config.get_conf(
+                "injector_executor_commands", default=None
+            ),
+            "injector_executor_clear_commands": config.get_conf(
+                "injector_executor_clear_commands", default=None
+            ),
         }
         icon_name = config.get_conf("injector_type") + ".png"
         injector_icon = (icon_name, icon, "image/png")
