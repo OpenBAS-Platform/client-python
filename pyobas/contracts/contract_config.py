@@ -107,6 +107,7 @@ class Contract:
         + VariableHelper.uri_variables()
     )
     attack_patterns_external_ids: List[str] = field(default_factory=list)
+    is_atomic_testing: bool = True
     platforms: List[str] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
