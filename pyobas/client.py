@@ -65,6 +65,7 @@ class OpenBAS:
         self.attack_pattern = apis.AttackPatternManager(self)
         self.team = apis.TeamManager(self)
         self.user = apis.UserManager(self)
+        self.inject_expectation = apis.InjectExpectationManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:

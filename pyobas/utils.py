@@ -4,7 +4,7 @@ import email.message
 import json
 import logging
 import urllib.parse
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import requests
 from pythonjsonlogger import jsonlogger
