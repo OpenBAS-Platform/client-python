@@ -12,7 +12,7 @@ from typing import Callable, Dict, List, Optional, Union
 import pika
 import yaml
 
-from pyobas import OpenBAS
+from pyobas import OpenBAS, utils
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
@@ -152,6 +152,7 @@ class ListenQueue(threading.Thread):
         self,
         config: Dict,
         injector_config: Dict,
+        logger,
         callback,
     ) -> None:
         threading.Thread.__init__(self)
@@ -162,6 +163,7 @@ class ListenQueue(threading.Thread):
 
         self.callback = callback
         self.config = config
+        self.logger = logger
         self.host = injector_config.connection["host"]
         self.vhost = injector_config.connection["vhost"]
         self.use_ssl = injector_config.connection["use_ssl"]
@@ -197,10 +199,10 @@ class ListenQueue(threading.Thread):
         self.callback(json_data)
 
     def run(self) -> None:
-        print("Starting ListenQueue thread")
+        self.logger.info("Starting ListenQueue thread")
         while not self.exit_event.is_set():
             try:
-                print("ListenQueue connecting to rabbitMq.")
+                self.logger.info("ListenQueue connecting to RabbitMQ.")
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
                 self.pika_parameters = pika.ConnectionParameters(
@@ -221,7 +223,7 @@ class ListenQueue(threading.Thread):
                     # when not in cluster mode this line raise an exception
                     self.channel.confirm_delivery()
                 except Exception as err:  # pylint: disable=broad-except
-                    print(str(err))
+                    self.logger.error(str(err))
                 self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
@@ -232,13 +234,13 @@ class ListenQueue(threading.Thread):
                 try:
                     self.pika_connection.close()
                 except Exception as errInException:
-                    print(str(errInException))
+                    self.logger.error(str(errInException))
                 traceback.print_exc()
                 # Wait some time and then retry ListenQueue again.
                 time.sleep(10)
 
     def stop(self):
-        print("Preparing ListenQueue for clean shutdown")
+        self.logger.info("Preparing ListenQueue for clean shutdown")
         self.exit_event.set()
         self.pika_connection.close()
         if self.thread:
@@ -246,11 +248,12 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, api, config, ping_type) -> None:
+    def __init__(self, api, config, logger, ping_type) -> None:
         threading.Thread.__init__(self)
         self.ping_type = ping_type
         self.api = api
         self.config = config
+        self.logger = logger
         self.in_error = False
         self.exit_event = threading.Event()
 
@@ -262,15 +265,15 @@ class PingAlive(threading.Thread):
                 else:
                     self.api.collector.create(self.config, False)
             except Exception as e:  # pylint: disable=broad-except
-                print(str(e))
+                self.logger.error(str(e))
             self.exit_event.wait(40)
 
     def run(self) -> None:
-        print("Starting PingAlive thread")
+        self.logger.info("Starting PingAlive thread")
         self.ping()
 
     def stop(self) -> None:
-        print("Preparing PingAlive for clean shutdown")
+        self.logger.info("Preparing PingAlive for clean shutdown")
         self.exit_event.set()
 
 
@@ -309,12 +312,20 @@ class OpenBASCollectorHelper:
             url=config.get_conf("openbas_url"),
             token=config.get_conf("openbas_token"),
         )
+
         self.config = {
             "collector_id": config.get_conf("collector_id"),
             "collector_name": config.get_conf("collector_name"),
             "collector_type": config.get_conf("collector_type"),
             "collector_period": config.get_conf("collector_period"),
         }
+
+        self.logger_class = utils.logger(
+            config.get_conf("collector_log_level", default="info").upper(),
+            config.get_conf("collector_json_logging", default=True),
+        )
+        self.collector_logger = self.logger_class(config.get_conf("collector_name"))
+
         icon_name = config.get_conf("collector_id") + ".png"
         collector_icon = (icon_name, icon, "image/png")
         self.api.collector.create(self.config, collector_icon)
@@ -323,7 +334,9 @@ class OpenBASCollectorHelper:
         self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start ping thread
         if not self.connect_run_and_terminate:
-            self.ping = PingAlive(self.api, self.config, "collector")
+            self.ping = PingAlive(
+                self.api, self.config, self.collector_logger, "collector"
+            )
             self.ping.start()
         self.listen_queue = None
 
@@ -371,6 +384,13 @@ class OpenBASInjectorHelper:
                 "injector_executor_clear_commands", default=None
             ),
         }
+
+        self.logger_class = utils.logger(
+            config.get_conf("injector_log_level", default="info").upper(),
+            config.get_conf("injector_json_logging", default=True),
+        )
+        self.injector_logger = self.logger_class(config.get_conf("injector_name"))
+
         icon_name = config.get_conf("injector_type") + ".png"
         injector_icon = (icon_name, icon, "image/png")
         self.injector_config = self.api.injector.create(self.config, injector_icon)
@@ -378,14 +398,14 @@ class OpenBASInjectorHelper:
         self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start ping thread
         if not self.connect_run_and_terminate:
-            self.ping = PingAlive(self.api, self.config, "injector")
+            self.ping = PingAlive(
+                self.api, self.config, self.injector_logger, "injector"
+            )
             self.ping.start()
         self.listen_queue = None
 
     def listen(self, message_callback: Callable[[Dict], None]) -> None:
         self.listen_queue = ListenQueue(
-            self.config,
-            self.injector_config,
-            message_callback,
+            self.config, self.injector_config, self.injector_logger, message_callback
         )
         self.listen_queue.start()

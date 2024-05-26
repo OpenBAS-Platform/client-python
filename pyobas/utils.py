@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import email.message
 import json
 import logging
@@ -6,6 +7,7 @@ import urllib.parse
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
 import requests
+from pythonjsonlogger import jsonlogger
 
 
 class _StdoutStream:
@@ -18,31 +20,6 @@ def get_content_type(content_type: Optional[str]) -> str:
     message["content-type"] = content_type
 
     return message.get_content_type()
-
-
-class MaskingFormatter(logging.Formatter):
-    """A logging formatter that can mask credentials"""
-
-    def __init__(
-        self,
-        fmt: Optional[str] = logging.BASIC_FORMAT,
-        datefmt: Optional[str] = None,
-        style: Literal["%", "{", "$"] = "%",
-        validate: bool = True,
-        masked: Optional[str] = None,
-    ) -> None:
-        super().__init__(fmt, datefmt, style, validate)
-        self.masked = masked
-
-    def _filter(self, entry: str) -> str:
-        if not self.masked:
-            return entry
-
-        return entry.replace(self.masked, "[MASKED]")
-
-    def format(self, record: logging.LogRecord) -> str:
-        original = logging.Formatter.format(self, record)
-        return self._filter(original)
 
 
 def response_content(
@@ -136,3 +113,60 @@ class RequiredOptional:
                     f"Must provide one of these attributes: "
                     f"{', '.join(self.exclusive)}"
                 )
+
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if not log_record.get("timestamp"):
+            # This doesn't use record.created, so it is slightly off
+            now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            log_record["timestamp"] = now
+        if log_record.get("level"):
+            log_record["level"] = log_record["level"].upper()
+        else:
+            log_record["level"] = record.levelname
+
+
+def logger(level, json_logging=True):
+    # Exceptions
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("pika").setLevel(logging.ERROR)
+    # Exceptions
+    if json_logging:
+        log_handler = logging.StreamHandler()
+        log_handler.setLevel(level)
+        formatter = CustomJsonFormatter("%(timestamp)s %(level)s %(name)s %(message)s")
+        log_handler.setFormatter(formatter)
+        logging.basicConfig(handlers=[log_handler], level=level, force=True)
+    else:
+        logging.basicConfig(level=level)
+
+    class AppLogger:
+        def __init__(self, name):
+            self.local_logger = logging.getLogger(name)
+
+        @staticmethod
+        def prepare_meta(meta=None):
+            return None if meta is None else {"attributes": meta}
+
+        @staticmethod
+        def setup_logger_level(lib, log_level):
+            logging.getLogger(lib).setLevel(log_level)
+
+        def debug(self, message, meta=None):
+            self.local_logger.debug(message, extra=AppLogger.prepare_meta(meta))
+
+        def info(self, message, meta=None):
+            self.local_logger.info(message, extra=AppLogger.prepare_meta(meta))
+
+        def warning(self, message, meta=None):
+            self.local_logger.warning(message, extra=AppLogger.prepare_meta(meta))
+
+        def error(self, message, meta=None):
+            # noinspection PyTypeChecker
+            self.local_logger.error(
+                message, exc_info=1, extra=AppLogger.prepare_meta(meta)
+            )
+
+    return AppLogger
