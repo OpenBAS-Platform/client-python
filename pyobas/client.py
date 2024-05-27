@@ -64,6 +64,7 @@ class OpenBAS:
         self.kill_chain_phase = apis.KillChainPhaseManager(self)
         self.attack_pattern = apis.AttackPatternManager(self)
         self.team = apis.TeamManager(self)
+        self.endpoint = apis.EndpointManager(self)
         self.user = apis.UserManager(self)
         self.inject_expectation = apis.InjectExpectationManager(self)
 
@@ -294,7 +295,6 @@ class OpenBAS:
     ) -> Union[Dict[str, Any], requests.Response]:
         query_data = query_data or {}
         post_data = post_data or {}
-
         result = self.http_request(
             "put",
             path,
