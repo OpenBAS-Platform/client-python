@@ -348,12 +348,15 @@ class OpenBASCollectorHelper:
 
     def schedule(self, message_callback, delay):
         # Start execution directly
-        message_callback()
-        now = datetime.now(timezone.utc).isoformat()
-        self.api.collector.update(
-            self.config_helper.get_conf("collector_id"),
-            {"collector_last_execution": now},
-        )
+        try:
+            message_callback()
+            now = datetime.now(timezone.utc).isoformat()
+            self.api.collector.update(
+                self.config_helper.get_conf("collector_id"),
+                {"collector_last_execution": now},
+            )
+        except Exception as err:  # pylint: disable=broad-except
+            self.collector_logger.error(str(err))
         # Then schedule the next execution
         self.scheduler.enter(
             delay, 1, self._schedule, (self.scheduler, message_callback, delay)
