@@ -264,8 +264,8 @@ class PingAlive(threading.Thread):
                     self.api.injector.create(self.config, False)
                 else:
                     self.api.collector.create(self.config, False)
-            except Exception as e:  # pylint: disable=broad-except
-                self.logger.error(str(e))
+            except Exception as err:  # pylint: disable=broad-except
+                self.logger.error("Error pinging the API: " + str(err))
             self.exit_event.wait(40)
 
     def run(self) -> None:
@@ -342,7 +342,11 @@ class OpenBASCollectorHelper:
 
     def _schedule(self, scheduler, message_callback, delay):
         # Execute
-        message_callback()
+        try:
+            message_callback()
+        except Exception as err:  # pylint: disable=broad-except
+            self.collector_logger.error("Error collecting: " + str(err))
+
         # Then schedule the next execution
         scheduler.enter(delay, 1, self._schedule, (scheduler, message_callback, delay))
 
@@ -356,7 +360,7 @@ class OpenBASCollectorHelper:
                 {"collector_last_execution": now},
             )
         except Exception as err:  # pylint: disable=broad-except
-            self.collector_logger.error(str(err))
+            self.collector_logger.error("Error collecting: " + str(err))
         # Then schedule the next execution
         self.scheduler.enter(
             delay, 1, self._schedule, (self.scheduler, message_callback, delay)
