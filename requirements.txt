@@ -14,3 +14,4 @@ opentelemetry-sdk~=1.24.0
 # OpenBAS
 requests-toolbelt~=1.0.0
 dataclasses-json~=0.6.4
+thefuzz~=0.22

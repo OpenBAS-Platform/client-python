@@ -11,6 +11,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 import pika
 import yaml
+from thefuzz import fuzz
 
 from pyobas import OpenBAS, utils
 
@@ -416,3 +417,51 @@ class OpenBASInjectorHelper:
             self.config, self.injector_config, self.injector_logger, message_callback
         )
         self.listen_queue.start()
+
+
+class OpenBASDetectionHelper:
+    def __init__(self, logger, relevant_signatures_types) -> None:
+        self.logger = logger
+        self.relevant_signatures_types = relevant_signatures_types
+
+    def match_alert_element_fuzzy(self, signature_value, alert_values, fuzzy_scoring):
+        for alert_value in alert_values:
+            self.logger.info(
+                "Comparing alert value (" + alert_value + ", " + signature_value + ")"
+            )
+            ratio = fuzz.ratio(alert_value, signature_value)
+            if ratio > fuzzy_scoring:
+                self.logger.info("MATCHING! (score: " + str(ratio) + ")")
+                return True
+        return False
+
+    def match_alert_elements(self, signatures, alert_data):
+        # Example for alert_data
+        # {"process_name": {"list": ["xx", "yy"], "fuzzy": 90}}
+        relevant_signatures = [
+            s for s in signatures if s["type"] in self.relevant_signatures_types
+        ]
+
+        # Matching logics
+        signatures_number = len(relevant_signatures)
+        matching_number = 0
+        for signature in relevant_signatures:
+            alert_data_for_signature = alert_data[signature["type"]]
+            signature_result = False
+            if alert_data_for_signature["type"] == "fuzzy":
+                signature_result = self.match_alert_element_fuzzy(
+                    signature["value"],
+                    alert_data_for_signature["data"],
+                    alert_data_for_signature["score"],
+                )
+            elif alert_data_for_signature["type"] == "simple":
+                signature_result = signature["value"] in str(
+                    alert_data_for_signature["data"]
+                )
+
+            if signature_result:
+                matching_number = matching_number + 1
+
+        if signatures_number == matching_number:
+            return True
+        return False
