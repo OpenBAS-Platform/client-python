@@ -4,13 +4,13 @@ from pyobas import exceptions as exc
 from pyobas.base import RESTManager, RESTObject
 
 
-class AttackPatternPhase(RESTObject):
+class AttackPattern(RESTObject):
     _id_attr = "attack_pattern_id"
 
 
 class AttackPatternManager(RESTManager):
     _path = "/attack_patterns"
-    _obj_cls = AttackPatternPhase
+    _obj_cls = AttackPattern
 
     @exc.on_http_error(exc.OpenBASUpdateError)
     def upsert(
