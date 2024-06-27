@@ -202,6 +202,7 @@ class CreateMixin(_RestManagerBase):
         self._create_attrs.validate_attrs(data=data)
         # Handle specific URL for creation
         path = kwargs.pop("path", self.path)
+
         if icon:
             files = {"icon": icon}
         elif icon is False:

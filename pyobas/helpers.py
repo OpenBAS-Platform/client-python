@@ -307,19 +307,14 @@ class OpenBASConfigHelper:
 
 
 class OpenBASCollectorHelper:
-    def __init__(self, config: OpenBASConfigHelper, icon) -> None:
+    def __init__(
+        self, config: OpenBASConfigHelper, icon, security_platform_type=None
+    ) -> None:
         self.config_helper = config
         self.api = OpenBAS(
             url=config.get_conf("openbas_url"),
             token=config.get_conf("openbas_token"),
         )
-
-        self.config = {
-            "collector_id": config.get_conf("collector_id"),
-            "collector_name": config.get_conf("collector_name"),
-            "collector_type": config.get_conf("collector_type"),
-            "collector_period": config.get_conf("collector_period"),
-        }
 
         self.logger_class = utils.logger(
             config.get_conf("collector_log_level", default="info").upper(),
@@ -328,7 +323,31 @@ class OpenBASCollectorHelper:
         self.collector_logger = self.logger_class(config.get_conf("collector_name"))
 
         icon_name = config.get_conf("collector_id") + ".png"
-        collector_icon = (icon_name, icon, "image/png")
+
+        security_platform_id = None
+        if security_platform_type is not None:
+            collector_icon = (icon_name, open(icon, "rb"), "image/png")
+            document = self.api.document.upsert(document={}, file=collector_icon)
+            security_platform = self.api.security_platform.upsert(
+                {
+                    "asset_name": config.get_conf("collector_name"),
+                    "asset_external_reference": config.get_conf("collector_id"),
+                    "security_platform_type": security_platform_type,
+                    "security_platform_logo_light": document.get("document_id"),
+                    "security_platform_logo_dark": document.get("document_id"),
+                }
+            )
+            security_platform_id = security_platform.get("asset_id")
+
+        self.config = {
+            "collector_id": config.get_conf("collector_id"),
+            "collector_name": config.get_conf("collector_name"),
+            "collector_type": config.get_conf("collector_type"),
+            "collector_period": config.get_conf("collector_period"),
+            "collector_security_platform": security_platform_id,
+        }
+
+        collector_icon = (icon_name, open(icon, "rb"), "image/png")
         self.api.collector.create(self.config, collector_icon)
         self.connect_run_and_terminate = False
         # self.api.injector.create(self.config)
