@@ -457,11 +457,44 @@ class OpenBASDetectionHelper:
         return False
 
     def match_alert_elements(self, signatures, alert_data):
-        return self._match_alert_elements_original(
-            signatures, alert_data
-        ) or self._match_alert_elements_for_command_line(signatures, alert_data)
+        filtered_signatures = [signature for signature in signatures if signature.get('type') != "parent_process_name"]
+        filtered_alert_data = {key: value for key, value in alert_data.items() if key != "parent_process_name"}
+        return self._match_parent_process(signatures, alert_data) and (self._match_alert_elements_all_signatures(filtered_signatures, filtered_alert_data)
+                or self._match_alert_elements_at_least_one_signature(filtered_signatures, filtered_alert_data)
+                or self._match_alert_elements_for_command_line_detected_as_file(filtered_signatures, filtered_alert_data))
 
-    def _match_alert_elements_original(self, signatures, alert_data):
+    def _match_parent_process(self, signatures, alert_data):
+        found_signature_parent_process_name = next((signature for signature in signatures if signature.get('type') == 'parent_process_name'), None)
+        if found_signature_parent_process_name is None:
+            return True
+        found_alert_parent_process_name = alert_data.get("parent_process_name")
+        if found_alert_parent_process_name is None:
+            return True
+        alert_parent_process_name_value = next(iter(found_alert_parent_process_name.get("data")), None)
+        if alert_parent_process_name_value is None:
+            return True
+        obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        if re.match(obas_parent_process_name_pattern, alert_parent_process_name_value):
+            signature_parent_process_name_value = found_signature_parent_process_name.get("value")
+            if signature_parent_process_name_value == alert_parent_process_name_value:
+                return True
+            else:
+                return False
+        return True
+
+    def _match_alert_elements_all_signatures(self, signatures, alert_data):
+        matching_number, signatures_number = self._get_number_of_matches(signatures, alert_data)
+        if signatures_number == matching_number:
+            return True
+        return False
+
+    def _match_alert_elements_at_least_one_signature(self, signatures, alert_data):
+        matching_number, _ = self._get_number_of_matches(signatures, alert_data)
+        if matching_number > 0:
+            return True
+        return False
+
+    def _get_number_of_matches(self, signatures, alert_data):
         # Example for alert_data
         # {"process_name": {"list": ["xx", "yy"], "fuzzy": 90}}
         relevant_signatures = [
@@ -469,7 +502,6 @@ class OpenBASDetectionHelper:
         ]
 
         # Matching logics
-        signatures_number = len(relevant_signatures)
         matching_number = 0
         for signature in relevant_signatures:
             alert_data_for_signature = alert_data[signature["type"]]
@@ -484,15 +516,11 @@ class OpenBASDetectionHelper:
                 signature_result = signature["value"] in str(
                     alert_data_for_signature["data"]
                 )
-
             if signature_result:
                 matching_number = matching_number + 1
+        return matching_number, len(relevant_signatures)
 
-        if signatures_number == matching_number:
-            return True
-        return False
-
-    def _match_alert_elements_for_command_line(self, signatures, alert_data):
+    def _match_alert_elements_for_command_line_detected_as_file(self, signatures, alert_data):
         command_line_signatures = [
             signature
             for signature in signatures
@@ -500,35 +528,15 @@ class OpenBASDetectionHelper:
         ]
         if len(command_line_signatures) == 0:
             return False
-        key_types = ["command_line", "command_line_base64", "process_name", "file_name"]
+        key_types = ["file_name", "process_name"]
         alert_datas = [alert_data.get(key) for key in key_types if key in alert_data]
         for signature in command_line_signatures:
-            signature_result = False
-            signature_value = self._decode_value(signature["value"]).strip().lower()
+            signature_value = signature["value"].strip().lower()
             for alert_data in alert_datas:
                 trimmed_lowered_datas = [s.strip().lower() for s in alert_data["data"]]
                 signature_result = any(
                     data in signature_value for data in trimmed_lowered_datas
                 )
-            if signature_result:
-                return True
+                if signature_result:
+                    return True
         return False
-
-    def _decode_value(self, signature_value):
-        if _is_base64_encoded(signature_value):
-            try:
-                decoded_bytes = base64.b64decode(signature_value)
-                decoded_str = decoded_bytes.decode("utf-8")
-                return decoded_str
-            except Exception as e:
-                self.logger.error(str(e))
-        else:
-            return signature_value
-
-
-def _is_base64_encoded(str_maybe_base64):
-    # Check if the length is a multiple of 4 and matches the Base64 character set
-    base64_pattern = re.compile(r"^[A-Za-z0-9+/]*={0,2}$")
-    return len(str_maybe_base64) % 4 == 0 and bool(
-        base64_pattern.match(str_maybe_base64)
-    )
