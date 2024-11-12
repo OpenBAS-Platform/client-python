@@ -1,4 +1,3 @@
-import base64
 import json
 import os
 import re
@@ -457,25 +456,52 @@ class OpenBASDetectionHelper:
         return False
 
     def match_alert_elements(self, signatures, alert_data):
-        filtered_signatures = [signature for signature in signatures if signature.get('type') != "parent_process_name"]
-        filtered_alert_data = {key: value for key, value in alert_data.items() if key != "parent_process_name"}
-        return self._match_parent_process(signatures, alert_data) and (self._match_alert_elements_all_signatures(filtered_signatures, filtered_alert_data)
-                or self._match_alert_elements_at_least_one_signature(filtered_signatures, filtered_alert_data)
-                or self._match_alert_elements_for_command_line_detected_as_file(filtered_signatures, filtered_alert_data))
+        filtered_signatures = [
+            signature
+            for signature in signatures
+            if signature.get("type") != "parent_process_name"
+        ]
+        filtered_alert_data = {
+            key: value
+            for key, value in alert_data.items()
+            if key != "parent_process_name"
+        }
+        return self._match_parent_process(signatures, alert_data) and (
+            self._match_alert_elements_all_signatures(
+                filtered_signatures, filtered_alert_data
+            )
+            or self._match_alert_elements_at_least_one_signature(
+                filtered_signatures, filtered_alert_data
+            )
+            or self._match_alert_elements_for_command_line_detected_as_file(
+                filtered_signatures, filtered_alert_data
+            )
+        )
 
     def _match_parent_process(self, signatures, alert_data):
-        found_signature_parent_process_name = next((signature for signature in signatures if signature.get('type') == 'parent_process_name'), None)
+        found_signature_parent_process_name = next(
+            (
+                signature
+                for signature in signatures
+                if signature.get("type") == "parent_process_name"
+            ),
+            None,
+        )
         if found_signature_parent_process_name is None:
             return True
         found_alert_parent_process_name = alert_data.get("parent_process_name")
         if found_alert_parent_process_name is None:
             return True
-        alert_parent_process_name_value = next(iter(found_alert_parent_process_name.get("data")), None)
+        alert_parent_process_name_value = next(
+            iter(found_alert_parent_process_name.get("data")), None
+        )
         if alert_parent_process_name_value is None:
             return True
         obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         if re.match(obas_parent_process_name_pattern, alert_parent_process_name_value):
-            signature_parent_process_name_value = found_signature_parent_process_name.get("value")
+            signature_parent_process_name_value = (
+                found_signature_parent_process_name.get("value")
+            )
             if signature_parent_process_name_value == alert_parent_process_name_value:
                 return True
             else:
@@ -483,7 +509,9 @@ class OpenBASDetectionHelper:
         return True
 
     def _match_alert_elements_all_signatures(self, signatures, alert_data):
-        matching_number, signatures_number = self._get_number_of_matches(signatures, alert_data)
+        matching_number, signatures_number = self._get_number_of_matches(
+            signatures, alert_data
+        )
         if signatures_number == matching_number:
             return True
         return False
@@ -520,7 +548,9 @@ class OpenBASDetectionHelper:
                 matching_number = matching_number + 1
         return matching_number, len(relevant_signatures)
 
-    def _match_alert_elements_for_command_line_detected_as_file(self, signatures, alert_data):
+    def _match_alert_elements_for_command_line_detected_as_file(
+        self, signatures, alert_data
+    ):
         command_line_signatures = [
             signature
             for signature in signatures
