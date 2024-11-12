@@ -500,7 +500,7 @@ class OpenBASDetectionHelper:
         ]
         if len(command_line_signatures) == 0:
             return False
-        key_types = ["command_line", "process_name", "file_name"]
+        key_types = ["command_line", "command_line_base64", "process_name", "file_name"]
         alert_datas = [alert_data.get(key) for key in key_types if key in alert_data]
         for signature in command_line_signatures:
             signature_result = False
