@@ -476,29 +476,26 @@ class OpenBASDetectionHelper:
         )
 
     def _match_parent_process(self, signatures, alert_data):
-        found_signature_parent_process_name = next(
+        signature_parent_process_name_value = next(
             (
-                signature
+                signature.get("value")
                 for signature in signatures
                 if signature.get("type") == "parent_process_name"
             ),
             None,
         )
-        if found_signature_parent_process_name is None:
-            return True
-        found_alert_parent_process_name = alert_data.get("parent_process_name")
-        if found_alert_parent_process_name is None:
-            return True
         alert_parent_process_name_value = next(
-            iter(found_alert_parent_process_name.get("data")), None
+            iter(alert_data.get("parent_process_name", {}).get("data", [])), None
         )
-        if alert_parent_process_name_value is None:
+
+        if (
+            signature_parent_process_name_value is None
+            or alert_parent_process_name_value is None
+        ):
             return True
+
         obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         if re.match(obas_parent_process_name_pattern, alert_parent_process_name_value):
-            signature_parent_process_name_value = (
-                found_signature_parent_process_name.get("value")
-            )
             if signature_parent_process_name_value == alert_parent_process_name_value:
                 return True
             else:
@@ -506,38 +503,65 @@ class OpenBASDetectionHelper:
         return True
 
     def _match_alert_elements_all_signatures(self, signatures, alert_data):
-        matching_number, signatures_number = self._get_number_of_matches(
-            signatures, alert_data
+        relevant_signatures_types = [
+            signature
+            for signature in self.relevant_signatures_types
+            if signature != "parent_process_name"
+        ]
+        signature_type_and_matching = self._get_signature_type_and_matching(
+            signatures, alert_data, relevant_signatures_types
         )
-        if signatures_number == matching_number or matching_number > 0:
-            return True
-        return False
+        results = {
+            key: value
+            for key, value in signature_type_and_matching.items()
+            if key != "command_line" and key != "command_line_base64"
+        }
+        all_signatures_matched = len(results) > 0 and all(
+            value is True for value in results.values()
+        )
+        command_line_results = {
+            key: value
+            for key, value in signature_type_and_matching.items()
+            if key == "command_line" or key == "command_line_base64"
+        }
+        command_line_or_base64_matched = any(
+            value is True for value in command_line_results.values()
+        )
+        return (
+            (
+                len(results) > 0
+                and all_signatures_matched
+                and len(command_line_results) > 0
+                and command_line_or_base64_matched
+            )
+            or (len(results) == 0 and command_line_or_base64_matched)
+            or (len(command_line_results) == 0 and all_signatures_matched)
+        )
 
-    def _get_number_of_matches(self, signatures, alert_data):
+    def _get_signature_type_and_matching(
+        self, signatures, alert_data, relevant_signatures_types
+    ):
         # Example for alert_data
         # {"process_name": {"list": ["xx", "yy"], "fuzzy": 90}}
         relevant_signatures = [
-            s for s in signatures if s["type"] in self.relevant_signatures_types
+            s for s in signatures if s["type"] in relevant_signatures_types
         ]
-
-        # Matching logics
-        matching_number = 0
+        signature_type_and_matching = {}
         for signature in relevant_signatures:
             alert_data_for_signature = alert_data[signature["type"]]
-            signature_result = False
             if alert_data_for_signature["type"] == "fuzzy":
-                signature_result = self.match_alert_element_fuzzy(
-                    signature["value"],
-                    alert_data_for_signature["data"],
-                    alert_data_for_signature["score"],
+                signature_type_and_matching[signature["type"]] = (
+                    self.match_alert_element_fuzzy(
+                        signature["value"],
+                        alert_data_for_signature["data"],
+                        alert_data_for_signature["score"],
+                    )
                 )
             elif alert_data_for_signature["type"] == "simple":
-                signature_result = signature["value"] in str(
-                    alert_data_for_signature["data"]
-                )
-            if signature_result:
-                matching_number = matching_number + 1
-        return matching_number, len(relevant_signatures)
+                signature_type_and_matching[signature["type"]] = signature[
+                    "value"
+                ] in str(alert_data_for_signature["data"])
+        return signature_type_and_matching
 
     def _match_alert_elements_for_command_line_detected_as_file(
         self, signatures, alert_data

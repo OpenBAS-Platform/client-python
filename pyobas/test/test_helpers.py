@@ -17,6 +17,86 @@ class TestOpenBASDetectionHelper(unittest.TestCase):
             self.mock_logger, self.relevant_signatures_types
         )
 
+    def test_should_match_alert_parent_process_name_and_clear_command_line(self):
+        signatures = [
+            {
+                "type": "parent_process_name",
+                "value": "obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9",
+            },
+            {
+                "type": "command_line",
+                "value": "SCHTASKS /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10\n",
+            },
+            {
+                "type": "command_line_base64",
+                "value": "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK",
+            },
+        ]
+        alert_data = {
+            "parent_process_name": {
+                "type": "fuzzy",
+                "data": ["obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9"],
+                "score": 80,
+            },
+            "command_line": {
+                "type": "fuzzy",
+                "data": [
+                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
+                ],
+                "score": 60,
+            },
+            "command_line_base64": {
+                "type": "fuzzy",
+                "data": [
+                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
+                ],
+                "score": 60,
+            },
+        }
+
+        result = self.detection_helper.match_alert_elements(signatures, alert_data)
+        self.assertTrue(result)
+
+    def test_should_not_match_alert_parent_process_name(self):
+        signatures = [
+            {
+                "type": "parent_process_name",
+                "value": "obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9",
+            },
+            {
+                "type": "command_line",
+                "value": "SCHTASKS /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10\n",
+            },
+            {
+                "type": "command_line_base64",
+                "value": "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK",
+            },
+        ]
+        alert_data = {
+            "parent_process_name": {
+                "type": "fuzzy",
+                "data": ["obas-implant-44942182-fb2f-41e3-a3c9-cb0eac1cd2d9"],
+                "score": 80,
+            },
+            "command_line": {
+                "type": "fuzzy",
+                "data": [
+                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
+                ],
+                "score": 60,
+            },
+            "command_line_base64": {
+                "type": "fuzzy",
+                "data": [
+                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
+                ],
+                "score": 60,
+            },
+        }
+
+        result = self.detection_helper.match_alert_elements(signatures, alert_data)
+        self.assertFalse(result)
+
     def test_should_match_alert_with_clear_alert_command_line(self):
         signatures = [
             {
@@ -100,86 +180,6 @@ class TestOpenBASDetectionHelper(unittest.TestCase):
             "process_name": {"type": "fuzzy", "data": ["eicar.zip"], "score": 60},
             "command_line": {"type": "fuzzy", "data": [], "score": 60},
             "command_line_base64": {"type": "fuzzy", "data": [], "score": 60},
-        }
-
-        result = self.detection_helper.match_alert_elements(signatures, alert_data)
-        self.assertFalse(result)
-
-    def test_should_match_alert_parent_process_name(self):
-        signatures = [
-            {
-                "type": "parent_process_name",
-                "value": "obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9",
-            },
-            {
-                "type": "command_line",
-                "value": "SCHTASKS /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10\n",
-            },
-            {
-                "type": "command_line_base64",
-                "value": "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK",
-            },
-        ]
-        alert_data = {
-            "parent_process_name": {
-                "type": "fuzzy",
-                "data": ["obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9"],
-                "score": 80,
-            },
-            "command_line": {
-                "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
-                "score": 60,
-            },
-            "command_line_base64": {
-                "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
-                "score": 60,
-            },
-        }
-
-        result = self.detection_helper.match_alert_elements(signatures, alert_data)
-        self.assertTrue(result)
-
-    def test_should_not_match_alert_parent_process_name(self):
-        signatures = [
-            {
-                "type": "parent_process_name",
-                "value": "obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9",
-            },
-            {
-                "type": "command_line",
-                "value": "SCHTASKS /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10\n",
-            },
-            {
-                "type": "command_line_base64",
-                "value": "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK",
-            },
-        ]
-        alert_data = {
-            "parent_process_name": {
-                "type": "fuzzy",
-                "data": ["obas-implant-44942182-fb2f-41e3-a3c9-cb0eac1cd2d9"],
-                "score": 80,
-            },
-            "command_line": {
-                "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
-                "score": 60,
-            },
-            "command_line_base64": {
-                "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
-                "score": 60,
-            },
         }
 
         result = self.detection_helper.match_alert_elements(signatures, alert_data)
