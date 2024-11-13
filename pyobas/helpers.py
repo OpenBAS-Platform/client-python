@@ -470,9 +470,6 @@ class OpenBASDetectionHelper:
             self._match_alert_elements_all_signatures(
                 filtered_signatures, filtered_alert_data
             )
-            or self._match_alert_elements_at_least_one_signature(
-                filtered_signatures, filtered_alert_data
-            )
             or self._match_alert_elements_for_command_line_detected_as_file(
                 filtered_signatures, filtered_alert_data
             )
@@ -512,13 +509,7 @@ class OpenBASDetectionHelper:
         matching_number, signatures_number = self._get_number_of_matches(
             signatures, alert_data
         )
-        if signatures_number == matching_number:
-            return True
-        return False
-
-    def _match_alert_elements_at_least_one_signature(self, signatures, alert_data):
-        matching_number, _ = self._get_number_of_matches(signatures, alert_data)
-        if matching_number > 0:
+        if signatures_number == matching_number or matching_number > 0:
             return True
         return False
 
