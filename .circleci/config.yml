@@ -166,6 +166,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - tests:
+          filters:
+            tags:
+              only: /.*/
       - build:
           filters:
             tags:
