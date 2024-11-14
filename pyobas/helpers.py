@@ -495,7 +495,7 @@ class OpenBASDetectionHelper:
             signature_parent_process_name_value is None
             or alert_parent_process_name_value is None
         ):
-            return {"can_match": False, "match_result": False}
+            return {"able_to_match": False, "match_result": False}
 
         obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         return {
