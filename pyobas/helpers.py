@@ -498,12 +498,16 @@ class OpenBASDetectionHelper:
             return {"able_to_match": False, "match_result": False}
 
         obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        able_to_match = re.match(
+            obas_parent_process_name_pattern, alert_parent_process_name_value
+        )
         return {
-            "able_to_match": re.match(
-                obas_parent_process_name_pattern, alert_parent_process_name_value
+            "able_to_match": able_to_match,
+            "match_result": (
+                signature_parent_process_name_value == alert_parent_process_name_value
+                if able_to_match
+                else False
             ),
-            "match_result": signature_parent_process_name_value
-            == alert_parent_process_name_value,
         }
 
     def _match_alert_elements_all_signatures(self, signatures, alert_data):
