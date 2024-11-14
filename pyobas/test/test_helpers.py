@@ -80,16 +80,12 @@ class TestOpenBASDetectionHelper(unittest.TestCase):
             },
             "command_line": {
                 "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
+                "data": ['"schtasks.exe"'],
                 "score": 60,
             },
             "command_line_base64": {
                 "type": "fuzzy",
-                "data": [
-                    '"schtasks.exe" /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10'
-                ],
+                "data": ['"schtasks.exe"'],
                 "score": 60,
             },
         }

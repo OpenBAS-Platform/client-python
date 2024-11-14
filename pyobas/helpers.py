@@ -456,6 +456,11 @@ class OpenBASDetectionHelper:
         return False
 
     def match_alert_elements(self, signatures, alert_data):
+        match_parent_process = self._match_parent_process(signatures, alert_data)
+
+        if match_parent_process.get("able_to_match"):
+            return match_parent_process.get("match_result")
+
         filtered_signatures = [
             signature
             for signature in signatures
@@ -466,13 +471,11 @@ class OpenBASDetectionHelper:
             for key, value in alert_data.items()
             if key != "parent_process_name"
         }
-        return self._match_parent_process(signatures, alert_data) and (
-            self._match_alert_elements_all_signatures(
-                filtered_signatures, filtered_alert_data
-            )
-            or self._match_alert_elements_for_command_line_detected_as_file(
-                filtered_signatures, filtered_alert_data
-            )
+
+        return self._match_alert_elements_all_signatures(
+            filtered_signatures, filtered_alert_data
+        ) or self._match_alert_elements_for_command_line_detected_as_file(
+            filtered_signatures, filtered_alert_data
         )
 
     def _match_parent_process(self, signatures, alert_data):
@@ -492,15 +495,16 @@ class OpenBASDetectionHelper:
             signature_parent_process_name_value is None
             or alert_parent_process_name_value is None
         ):
-            return True
+            return {"can_match": False, "match_result": False}
 
         obas_parent_process_name_pattern = r"^obas-implant-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-        if re.match(obas_parent_process_name_pattern, alert_parent_process_name_value):
-            if signature_parent_process_name_value == alert_parent_process_name_value:
-                return True
-            else:
-                return False
-        return True
+        return {
+            "able_to_match": re.match(
+                obas_parent_process_name_pattern, alert_parent_process_name_value
+            ),
+            "match_result": signature_parent_process_name_value
+            == alert_parent_process_name_value,
+        }
 
     def _match_alert_elements_all_signatures(self, signatures, alert_data):
         relevant_signatures_types = [
