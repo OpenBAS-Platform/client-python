@@ -133,6 +133,42 @@ class TestOpenBASDetectionHelper(unittest.TestCase):
         result = self.detection_helper.match_alert_elements(signatures, alert_data)
         self.assertTrue(result)
 
+    def test_should_match_alert_with_base64_alert_command_line(self):
+        signatures = [
+            {
+                "type": "parent_process_name",
+                "value": "obas-implant-04942182-fb2f-41e3-a3c9-cb0eac1cd2d9",
+            },
+            {
+                "type": "command_line",
+                "value": "SCHTASKS /Create /SC ONCE /TN spawn /TR C:\\windows\\system32\\cmd.exe /ST 20:10\n",
+            },
+            {
+                "type": "command_line_base64",
+                "value": "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK",
+            },
+        ]
+        alert_data = {
+            "parent_process_name": {"type": "fuzzy", "data": ["pwsh.exe"], "score": 80},
+            "command_line": {
+                "type": "fuzzy",
+                "data": [
+                    "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK"
+                ],
+                "score": 60,
+            },
+            "command_line_base64": {
+                "type": "fuzzy",
+                "data": [
+                    "U0NIVEFTS1MgL0NyZWF0ZSAvU0MgT05DRSAvVE4gc3Bhd24gL1RSIEM6XHdpbmRvd3Ncc3lzdGVtMzJcY21kLmV4ZSAvU1QgMjA6MTAK"
+                ],
+                "score": 60,
+            },
+        }
+
+        result = self.detection_helper.match_alert_elements(signatures, alert_data)
+        self.assertTrue(result)
+
     def test_should_match_alert_with_command_line_detected_as_file_on_alert(self):
         signatures = [
             {
