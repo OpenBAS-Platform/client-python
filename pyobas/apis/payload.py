@@ -23,7 +23,5 @@ class PayloadManager(RESTManager):
         self, payloads_processed: Dict[str, Any], **kwargs: Any
     ) -> Dict[str, Any]:
         path = f"{self.path}/deprecate"
-        result = self.openbas.http_post(
-            path, post_data=payloads_processed, **kwargs
-        )
+        result = self.openbas.http_post(path, post_data=payloads_processed, **kwargs)
         return result
