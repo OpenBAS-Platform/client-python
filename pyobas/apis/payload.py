@@ -17,3 +17,11 @@ class PayloadManager(RESTManager):
         path = f"{self.path}/upsert"
         result = self.openbas.http_post(path, post_data=payload, **kwargs)
         return result
+
+    @exc.on_http_error(exc.OpenBASUpdateError)
+    def deprecate(
+        self, payloads_processed: Dict[str, Any], **kwargs: Any
+    ) -> Dict[str, Any]:
+        path = f"{self.path}/deprecate"
+        result = self.openbas.http_post(path, post_data=payloads_processed, **kwargs)
+        return result
