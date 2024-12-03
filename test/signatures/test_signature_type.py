@@ -26,7 +26,7 @@ class TestSignatureType(unittest.TestCase):
 
         self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_SIMPLE)
         self.assertEqual(simple_struct.get("data"), data)
-        self.assertIsNone(simple_struct.get("score", None))
+        self.assertFalse("score" in simple_struct.keys())
 
     def test_make_struct_create_expected_struct_for_fuzzy_sig_type(self):
         data = "just another simple string"
