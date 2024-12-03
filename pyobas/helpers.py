@@ -496,7 +496,7 @@ class OpenBASDetectionHelper:
         command_line_signatures = [
             signature
             for signature in signatures
-            if signature.get("type") == "command_line"
+            if signature.get("type") in ["command_line", "command_line_64"]
         ]
         if len(command_line_signatures) == 0:
             return False
