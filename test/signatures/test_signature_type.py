@@ -1,12 +1,12 @@
 import unittest
 
 from pyobas.signatures.signature_type import SignatureType
-from pyobas.signatures.types import MatchTypes
+from pyobas.signatures.types import MatchTypes, SignatureTypes
 
 
 class TestSignatureType(unittest.TestCase):
     def test_make_struct_create_expected_struct_for_simple_sig_type(self):
-        simple_signature_type_label = "Test signature type simple"
+        simple_signature_type_label = SignatureTypes.SIG_TYPE_HOSTNAME
         simple_signature_type = SignatureType(
             label=simple_signature_type_label, match_type=MatchTypes.MATCH_TYPE_SIMPLE
         )
@@ -19,7 +19,7 @@ class TestSignatureType(unittest.TestCase):
         self.assertFalse("score" in simple_struct.keys())
 
     def test_make_struct_create_expected_struct_for_fuzzy_sig_type(self):
-        fuzzy_signature_type_label = "Test signature type fuzzy"
+        fuzzy_signature_type_label = SignatureTypes.SIG_TYPE_HOSTNAME
         fuzzy_signature_type_score = 50
         fuzzy_signature_type = SignatureType(
             label=fuzzy_signature_type_label,
@@ -37,7 +37,7 @@ class TestSignatureType(unittest.TestCase):
     def test_make_struct_create_expected_struct_for_fuzzy_sig_type_when_score_is_0(
         self,
     ):
-        fuzzy_signature_type_label = "Test signature type fuzzy"
+        fuzzy_signature_type_label = SignatureTypes.SIG_TYPE_HOSTNAME
         fuzzy_signature_type_score = 0
         fuzzy_signature_type = SignatureType(
             label=fuzzy_signature_type_label,

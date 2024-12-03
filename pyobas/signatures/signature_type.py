@@ -1,11 +1,11 @@
 from pyobas.signatures.signature_match import SignatureMatch
-from pyobas.signatures.types import MatchTypes
+from pyobas.signatures.types import MatchTypes, SignatureTypes
 
 
 class SignatureType:
     def __init__(
         self,
-        label: str,
+        label: SignatureTypes,
         match_type: MatchTypes = MatchTypes.MATCH_TYPE_SIMPLE,
         match_score: int = None,
     ):
