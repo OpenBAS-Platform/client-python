@@ -1,8 +1,14 @@
-from pyobas.signatures.types import MatchTypes
 from pyobas.signatures.signature_match import SignatureMatch
+from pyobas.signatures.types import MatchTypes
+
 
 class SignatureType:
-    def __init__(self, label: str, match_type: str = MatchTypes.MATCH_TYPE_SIMPLE, match_score: int = None):
+    def __init__(
+        self,
+        label: str,
+        match_type: str = MatchTypes.MATCH_TYPE_SIMPLE,
+        match_score: int = None,
+    ):
         self.label = label
         self.match_policy = SignatureMatch(match_type, match_score)
 
