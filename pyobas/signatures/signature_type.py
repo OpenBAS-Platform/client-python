@@ -6,12 +6,20 @@ class SignatureType:
     def __init__(
         self,
         label: str,
-        match_type: str = MatchTypes.MATCH_TYPE_SIMPLE,
+        match_type: MatchTypes = MatchTypes.MATCH_TYPE_SIMPLE,
         match_score: int = None,
     ):
         self.label = label
         self.match_policy = SignatureMatch(match_type, match_score)
 
+    # provided some `data`, formats a dictionary specifying the matching
+    # policy to use by the helper to match expected signatures (from expectations)
+    # with actual, alert signatures (from the security software)
+    # Output: {
+    #   "type": str,
+    #   "data": any,
+    #   "score": (optional) int
+    # }
     def make_struct_for_matching(self, data):
         struct = {
             "type": self.match_policy.match_type,
