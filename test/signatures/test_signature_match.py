@@ -2,7 +2,7 @@ import unittest
 
 from pyobas.exceptions import OpenBASError
 from pyobas.signatures.signature_match import SignatureMatch
-from pyobas.signatures.types import MatchTypes, SignatureTypes
+from pyobas.signatures.types import MatchTypes
 
 
 class TestSignatureMatch(unittest.TestCase):
