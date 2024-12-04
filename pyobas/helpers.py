@@ -310,7 +310,11 @@ class OpenBASConfigHelper:
 
 class OpenBASCollectorHelper:
     def __init__(
-        self, config: OpenBASConfigHelper, icon, security_platform_type=None
+        self,
+        config: OpenBASConfigHelper,
+        icon,
+        security_platform_type=None,
+        connect_run_and_terminate: bool = False,
     ) -> None:
         self.config_helper = config
         self.api = OpenBAS(
@@ -351,11 +355,10 @@ class OpenBASCollectorHelper:
 
         collector_icon = (icon_name, open(icon, "rb"), "image/png")
         self.api.collector.create(self.config, collector_icon)
-        self.connect_run_and_terminate = False
         # self.api.injector.create(self.config)
         self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start ping thread
-        if not self.connect_run_and_terminate:
+        if not connect_run_and_terminate:
             self.ping = PingAlive(
                 self.api, self.config, self.collector_logger, "collector"
             )
