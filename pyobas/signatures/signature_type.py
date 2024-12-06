@@ -22,7 +22,7 @@ class SignatureType:
     # }
     def make_struct_for_matching(self, data):
         struct = {
-            "type": self.match_policy.match_type,
+            "type": self.match_policy.match_type.value,
             "data": data,
         }
 
