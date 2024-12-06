@@ -14,7 +14,7 @@ class TestSignatureType(unittest.TestCase):
         data = "just a simple string"
         simple_struct = simple_signature_type.make_struct_for_matching(data=data)
 
-        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_SIMPLE)
+        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_SIMPLE.value)
         self.assertEqual(simple_struct.get("data"), data)
         self.assertFalse("score" in simple_struct.keys())
 
@@ -30,7 +30,7 @@ class TestSignatureType(unittest.TestCase):
         data = "just another simple string"
         simple_struct = fuzzy_signature_type.make_struct_for_matching(data=data)
 
-        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_FUZZY)
+        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_FUZZY.value)
         self.assertEqual(simple_struct.get("data"), data)
         self.assertEqual(simple_struct.get("score"), fuzzy_signature_type_score)
 
@@ -48,7 +48,7 @@ class TestSignatureType(unittest.TestCase):
         data = "just another simple string"
         simple_struct = fuzzy_signature_type.make_struct_for_matching(data=data)
 
-        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_FUZZY)
+        self.assertEqual(simple_struct.get("type"), MatchTypes.MATCH_TYPE_FUZZY.value)
         self.assertEqual(simple_struct.get("data"), data)
         self.assertEqual(simple_struct.get("score"), fuzzy_signature_type_score)
 
