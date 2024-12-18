@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import os.path
 import re
 import sched
 import ssl
@@ -12,10 +13,11 @@ from datetime import datetime, timezone
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
-import yaml
 from thefuzz import fuzz
 
 from pyobas import OpenBAS, utils
+from pyobas.configuration import Configuration
+from pyobas.exceptions import ConfigurationError
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
@@ -74,70 +76,38 @@ def ssl_verify_locations(ssl_context, certdata):
     else:
         ssl_context.load_verify_locations(cafile=certdata)
 
-
-def get_config_variable(
-    env_var: str,
-    yaml_path: List,
-    config: Dict = {},
-    isNumber: Optional[bool] = False,
-    default=None,
-    required=False,
-) -> Union[bool, int, None, str]:
-    """[summary]
-
-    :param env_var: environment variable name
-    :param yaml_path: path to yaml config
-    :param config: client config dict, defaults to {}
-    :param isNumber: specify if the variable is a number, defaults to False
-    :param default: default value
-    """
-
-    if os.getenv(env_var) is not None:
-        result = os.getenv(env_var)
-    elif yaml_path is not None:
-        if yaml_path[0] in config and yaml_path[1] in config[yaml_path[0]]:
-            result = config[yaml_path[0]][yaml_path[1]]
-        else:
-            return default
-    else:
-        return default
-
-    if result in TRUTHY:
-        return True
-    if result in FALSY:
-        return False
-    if isNumber:
-        return int(result)
-
-    if (
-        required
-        and default is None
-        and (result is None or (isinstance(result, str) and len(result) == 0))
-    ):
-        raise ValueError("The configuration " + env_var + " is required")
-
-    if isinstance(result, str) and len(result) == 0:
-        return default
-
-    return result
-
-
 def create_mq_ssl_context(config) -> ssl.SSLContext:
-    use_ssl_ca = get_config_variable("MQ_USE_SSL_CA", ["mq", "use_ssl_ca"], config)
-    use_ssl_cert = get_config_variable(
-        "MQ_USE_SSL_CERT", ["mq", "use_ssl_cert"], config
+    config_obj = Configuration(config_hints={
+            "MQ_USE_SSL_CA": {
+                "env": "MQ_USE_SSL_CA",
+                "file_path": ["mq", "use_ssl_ca"]
+            },
+            "MQ_USE_SSL_CERT":{
+                "env": "MQ_USE_SSL_CERT",
+                "file_path": ["mq", "use_ssl_cert"]
+            },
+            "MQ_USE_SSL_KEY":{
+                "env": "MQ_USE_SSL_KEY",
+                "file_path": ["mq", "use_ssl_key"]
+            },
+            "MQ_USE_SSL_REJECT_UNAUTHORIZED":{
+                "env": "MQ_USE_SSL_REJECT_UNAUTHORIZED",
+                "file_path": ["mq", "use_ssl_reject_unauthorized"],
+                "is_number": False,
+                "default": False
+            },
+            "MQ_USE_SSL_PASSPHRASE":{
+                "env": "MQ_USE_SSL_PASSPHRASE",
+                "file_path": ["mq", "use_ssl_passphrase"]
+            },
+        },
+        config_values=config
     )
-    use_ssl_key = get_config_variable("MQ_USE_SSL_KEY", ["mq", "use_ssl_key"], config)
-    use_ssl_reject_unauthorized = get_config_variable(
-        "MQ_USE_SSL_REJECT_UNAUTHORIZED",
-        ["mq", "use_ssl_reject_unauthorized"],
-        config,
-        False,
-        False,
-    )
-    use_ssl_passphrase = get_config_variable(
-        "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
-    )
+    use_ssl_ca = config_obj.get("MQ_USE_SSL_CA")
+    use_ssl_cert = config_obj.get("MQ_USE_SSL_CERT")
+    use_ssl_key = config_obj.get("MQ_USE_SSL_KEY")
+    use_ssl_reject_unauthorized = config_obj.get("MQ_USE_SSL_REJECT_UNAUTHORIZED")
+    use_ssl_passphrase = config_obj.get("MQ_USE_SSL_PASSPHRASE")
     ssl_context = ssl.create_default_context()
     # If no rejection allowed, use private function to generate unverified context
     if not use_ssl_reject_unauthorized:
@@ -282,30 +252,21 @@ class PingAlive(threading.Thread):
 
 class OpenBASConfigHelper:
     def __init__(self, base_path, variables: Dict):
-        config_file_path = os.path.dirname(os.path.abspath(base_path)) + "/config.yml"
-        self.file_config = (
-            yaml.load(open(config_file_path), Loader=yaml.FullLoader)
-            if os.path.isfile(config_file_path)
-            else {}
+        self.__config_obj = Configuration(
+            config_hints=variables,
+            config_file_path=os.path.join(os.path.dirname(os.path.abspath(base_path)), "config.yml")
         )
-        self.variables = variables
 
     def get_conf(self, variable, is_number=None, default=None, required=None):
-        var = self.variables.get(variable)
-        if var is None:
-            return default
-        # If direct variable
-        if var.get("data") is not None:
-            return var.get("data")
-        # Else if file or env variable
-        return get_config_variable(
-            env_var=var["env"],
-            yaml_path=var["file_path"],
-            config=self.file_config,
-            isNumber=var["is_number"] if "is_number" in var else is_number,
-            default=var["default"] if "default" in var else default,
-            required=required,
-        )
+        result = None
+        try:
+            result = self.__config_obj.get(variable) or default
+        except ConfigurationError:
+            result = default
+        finally:
+            if result is None and default is None and required:
+                raise ValueError(f"Could not find required key {variable} with no available default.")
+            return result
 
 
 class OpenBASCollectorHelper:

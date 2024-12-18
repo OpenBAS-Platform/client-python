@@ -11,6 +11,8 @@ from pyobas._version import (  # noqa: F401
 from pyobas.client import OpenBAS  # noqa: F401
 from pyobas.contracts import *  # noqa: F401,F403,F405
 from pyobas.exceptions import *  # noqa: F401,F403,F405
+from pyobas.signatures import *  # noqa: F401,F403,F405
+from pyobas.configuration import *  # noqa: F401,F403,F405
 
 __all__ = [
     "__author__",
