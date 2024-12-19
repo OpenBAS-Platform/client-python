@@ -2,9 +2,10 @@ import os
 import unittest
 from unittest.mock import patch
 
-from pyobas.configuration.sources import EnvironmentSource, DictionarySource
+from pyobas.configuration.sources import DictionarySource, EnvironmentSource
 
 TEST_ENV_VAR: str = "PYOBAS_TEST_ENV_VAR"
+
 
 class TestEnvironmentSource(unittest.TestCase):
     @patch.dict(os.environ, clear=True)
@@ -39,7 +40,7 @@ class TestDictionarySource(unittest.TestCase):
     def test_when_config_missing_first_path_part_return_None(self):
         expected_value = None
         key_path = ["element 1", "element 2"]
-        values = { "not element 1": None }
+        values = {"not element 1": None}
 
         result = DictionarySource.get(key_path, values)
 
@@ -48,9 +49,7 @@ class TestDictionarySource(unittest.TestCase):
     def test_when_config_missing_second_path_part_return_None(self):
         expected_value = None
         key_path = ["element 1", "element 2"]
-        values = {"element 1": {
-            "not element 2": "some value"
-        }}
+        values = {"element 1": {"not element 2": "some value"}}
 
         result = DictionarySource.get(key_path, values)
 
@@ -59,13 +58,12 @@ class TestDictionarySource(unittest.TestCase):
     def test_when_config_found_return_value(self):
         expected_value = "expected!"
         key_path = ["element 1", "element 2"]
-        values = {"element 1": {
-            "element 2": expected_value
-        }}
+        values = {"element 1": {"element 2": expected_value}}
 
         result = DictionarySource.get(key_path, values)
 
         self.assertEqual(result, expected_value)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -9,14 +9,14 @@ import tempfile
 import threading
 import time
 import traceback
-from datetime import datetime, timezone
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List
 
 import pika
 from thefuzz import fuzz
 
 from pyobas import OpenBAS, utils
 from pyobas.configuration import Configuration
+from pyobas.daemons import CollectorDaemon
 from pyobas.exceptions import ConfigurationError
 
 TRUTHY: List[str] = ["yes", "true", "True"]
@@ -76,32 +76,34 @@ def ssl_verify_locations(ssl_context, certdata):
     else:
         ssl_context.load_verify_locations(cafile=certdata)
 
+
 def create_mq_ssl_context(config) -> ssl.SSLContext:
-    config_obj = Configuration(config_hints={
+    config_obj = Configuration(
+        config_hints={
             "MQ_USE_SSL_CA": {
                 "env": "MQ_USE_SSL_CA",
-                "file_path": ["mq", "use_ssl_ca"]
+                "file_path": ["mq", "use_ssl_ca"],
             },
-            "MQ_USE_SSL_CERT":{
+            "MQ_USE_SSL_CERT": {
                 "env": "MQ_USE_SSL_CERT",
-                "file_path": ["mq", "use_ssl_cert"]
+                "file_path": ["mq", "use_ssl_cert"],
             },
-            "MQ_USE_SSL_KEY":{
+            "MQ_USE_SSL_KEY": {
                 "env": "MQ_USE_SSL_KEY",
-                "file_path": ["mq", "use_ssl_key"]
+                "file_path": ["mq", "use_ssl_key"],
             },
-            "MQ_USE_SSL_REJECT_UNAUTHORIZED":{
+            "MQ_USE_SSL_REJECT_UNAUTHORIZED": {
                 "env": "MQ_USE_SSL_REJECT_UNAUTHORIZED",
                 "file_path": ["mq", "use_ssl_reject_unauthorized"],
                 "is_number": False,
-                "default": False
+                "default": False,
             },
-            "MQ_USE_SSL_PASSPHRASE":{
+            "MQ_USE_SSL_PASSPHRASE": {
                 "env": "MQ_USE_SSL_PASSPHRASE",
-                "file_path": ["mq", "use_ssl_passphrase"]
+                "file_path": ["mq", "use_ssl_passphrase"],
             },
         },
-        config_values=config
+        config_values=config,
     )
     use_ssl_ca = config_obj.get("MQ_USE_SSL_CA")
     use_ssl_cert = config_obj.get("MQ_USE_SSL_CERT")
@@ -124,7 +126,7 @@ class ListenQueue(threading.Thread):
     def __init__(
         self,
         config: Dict,
-        injector_config: Dict,
+        injector_config,
         logger,
         callback,
     ) -> None:
@@ -220,41 +222,17 @@ class ListenQueue(threading.Thread):
             self.thread.join()
 
 
-class PingAlive(threading.Thread):
-    def __init__(self, api, config, logger, ping_type) -> None:
-        threading.Thread.__init__(self)
-        self.ping_type = ping_type
-        self.api = api
-        self.config = config
-        self.logger = logger
-        self.in_error = False
-        self.exit_event = threading.Event()
-
-    def ping(self) -> None:
-        while not self.exit_event.is_set():
-            try:
-                if self.ping_type == "injector":
-                    self.api.injector.create(self.config, False)
-                else:
-                    self.api.collector.create(self.config, False)
-            except Exception as err:  # pylint: disable=broad-except
-                self.logger.error("Error pinging the API: " + str(err))
-            self.exit_event.wait(40)
-
-    def run(self) -> None:
-        self.logger.info("Starting PingAlive thread")
-        self.ping()
-
-    def stop(self) -> None:
-        self.logger.info("Preparing PingAlive for clean shutdown")
-        self.exit_event.set()
+class PingAlive(utils.PingAlive):
+    pass
 
 
 class OpenBASConfigHelper:
     def __init__(self, base_path, variables: Dict):
         self.__config_obj = Configuration(
             config_hints=variables,
-            config_file_path=os.path.join(os.path.dirname(os.path.abspath(base_path)), "config.yml")
+            config_file_path=os.path.join(
+                os.path.dirname(os.path.abspath(base_path)), "config.yml"
+            ),
         )
 
     def get_conf(self, variable, is_number=None, default=None, required=None):
@@ -265,10 +243,16 @@ class OpenBASConfigHelper:
             result = default
         finally:
             if result is None and default is None and required:
-                raise ValueError(f"Could not find required key {variable} with no available default.")
+                raise ValueError(
+                    f"Could not find required key {variable} with no available default."
+                )
             return result
 
+    def to_configuration(self):
+        return self.__config_obj
 
+
+### DEPRECATED
 class OpenBASCollectorHelper:
     def __init__(
         self,
@@ -277,81 +261,30 @@ class OpenBASCollectorHelper:
         security_platform_type=None,
         connect_run_and_terminate: bool = False,
     ) -> None:
-        self.config_helper = config
-        self.api = OpenBAS(
-            url=config.get_conf("openbas_url"),
-            token=config.get_conf("openbas_token"),
-        )
-
-        self.logger_class = utils.logger(
-            config.get_conf("collector_log_level", default="info").upper(),
-            config.get_conf("collector_json_logging", default=True),
-        )
-        self.collector_logger = self.logger_class(config.get_conf("collector_name"))
-
-        icon_name = config.get_conf("collector_id") + ".png"
-
-        security_platform_id = None
+        config_obj = config.to_configuration()
+        # ensure the icon path is set in config
+        config_obj.set("collector_icon_filepath", icon)
+        # override the platform in config if passed this way
         if security_platform_type is not None:
-            collector_icon = (icon_name, open(icon, "rb"), "image/png")
-            document = self.api.document.upsert(document={}, file=collector_icon)
-            security_platform = self.api.security_platform.upsert(
-                {
-                    "asset_name": config.get_conf("collector_name"),
-                    "asset_external_reference": config.get_conf("collector_id"),
-                    "security_platform_type": security_platform_type,
-                    "security_platform_logo_light": document.get("document_id"),
-                    "security_platform_logo_dark": document.get("document_id"),
-                }
-            )
-            security_platform_id = security_platform.get("asset_id")
+            config_obj.set("collector_platform", security_platform_type)
 
-        self.config = {
-            "collector_id": config.get_conf("collector_id"),
-            "collector_name": config.get_conf("collector_name"),
-            "collector_type": config.get_conf("collector_type"),
-            "collector_period": config.get_conf("collector_period"),
-            "collector_security_platform": security_platform_id,
-        }
+        self.__daemon = CollectorDaemon(
+            configuration=config_obj,
+            callback=None,
+        )
 
-        collector_icon = (icon_name, open(icon, "rb"), "image/png")
-        self.api.collector.create(self.config, collector_icon)
-        # self.api.injector.create(self.config)
-        self.scheduler = sched.scheduler(time.time, time.sleep)
-        # Start ping thread
-        if not connect_run_and_terminate:
-            self.ping = PingAlive(
-                self.api, self.config, self.collector_logger, "collector"
-            )
-            self.ping.start()
-        self.listen_queue = None
+        self.__daemon.logger.warning(
+            f"DEPRECATED: this collector should be migrated to use {CollectorDaemon}."
+        )
 
-    def _schedule(self, scheduler, message_callback, delay):
-        # Execute
-        try:
-            message_callback()
-        except Exception as err:  # pylint: disable=broad-except
-            self.collector_logger.error("Error collecting: " + str(err))
-
-        # Then schedule the next execution
-        scheduler.enter(delay, 1, self._schedule, (scheduler, message_callback, delay))
+        # backwards compatibility
+        self.collector_logger = self.__daemon.logger
+        self.api = self.__daemon.api
+        self.config_helper = config
 
     def schedule(self, message_callback, delay):
-        # Start execution directly
-        try:
-            message_callback()
-            now = datetime.now(timezone.utc).isoformat()
-            self.api.collector.update(
-                self.config_helper.get_conf("collector_id"),
-                {"collector_last_execution": now},
-            )
-        except Exception as err:  # pylint: disable=broad-except
-            self.collector_logger.error("Error collecting: " + str(err))
-        # Then schedule the next execution
-        self.scheduler.enter(
-            delay, 1, self._schedule, (self.scheduler, message_callback, delay)
-        )
-        self.scheduler.run()
+        self.__daemon.set_callback(message_callback)
+        self.__daemon.start()
 
 
 class OpenBASInjectorHelper:
