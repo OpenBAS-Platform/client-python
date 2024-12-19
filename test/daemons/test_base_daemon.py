@@ -6,14 +6,15 @@ from pyobas.configuration import Configuration
 
 from pyobas.exceptions import OpenBASError
 
-TEST_DAEMON_CONFIG_HINTS={
-    "openbas_url": { "data": "http://example.com" },
-    "openbas_token": { "data": "test" },
-    "log_level": { "data": "info" },
-    "name": { "data": "my test daemon" }
+TEST_DAEMON_CONFIG_HINTS = {
+    "openbas_url": {"data": "http://example.com"},
+    "openbas_token": {"data": "test"},
+    "log_level": {"data": "info"},
+    "name": {"data": "my test daemon"},
 }
 
-TEST_DAEMON_CONFIGURATION=Configuration(config_hints=TEST_DAEMON_CONFIG_HINTS)
+TEST_DAEMON_CONFIGURATION = Configuration(config_hints=TEST_DAEMON_CONFIG_HINTS)
+
 
 class TestDaemon(BaseDaemon):
     def _setup(self):
@@ -21,6 +22,7 @@ class TestDaemon(BaseDaemon):
 
     def _start_loop(self):
         pass
+
 
 def create_mock_daemon(callback: callable = None):
     mock_setup = unittest.mock.MagicMock()
@@ -37,7 +39,13 @@ def create_mock_daemon(callback: callable = None):
         def bound_method(self):
             inner_mock_func()
 
-    return MockDaemon(configuration=TEST_DAEMON_CONFIGURATION, callback=callback), mock_setup, mock_start_loop, inner_mock_func
+    return (
+        MockDaemon(configuration=TEST_DAEMON_CONFIGURATION, callback=callback),
+        mock_setup,
+        mock_start_loop,
+        inner_mock_func,
+    )
+
 
 class TestBaseDaemon(unittest.TestCase):
     def test_when_no_callback_when_complete_config_ctor_ok(self):
@@ -91,6 +99,7 @@ class TestBaseDaemon(unittest.TestCase):
         daemon._try_callback()
 
         inner_mock_func.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

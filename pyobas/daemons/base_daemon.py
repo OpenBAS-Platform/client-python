@@ -12,7 +12,7 @@ class BaseDaemon(ABC):
     def __init__(
         self,
         configuration: Configuration,
-        callback: callable=None,
+        callback: callable = None,
         logger=None,
         api_client=None,
     ):
@@ -79,6 +79,13 @@ class BaseDaemon(ABC):
 
     def set_callback(self, callback: callable):
         self._callback = callback
+
+    def get_id(self):
+        return (
+            self._configuration.get("id")
+            or self._configuration.get("collector_id")
+            or self._configuration.get("injector_id")
+        )
 
     @classmethod
     def __get_default_api_client(cls, url, token):
