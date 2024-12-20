@@ -1,8 +1,8 @@
 OpenBAS client for Python
 =========================
 
-The pycti library is designed to help OpenBAS users and developers to interact
-with the OpenBAS platform GraphQL API.
+The pyobas library is designed to help OpenBAS users and developers to interact
+with the OpenBAS platform API.
 
 The Python library requires Python >= 3.
 
@@ -11,7 +11,7 @@ The Python library requires Python >= 3.
    :caption: Contents:
 
    client_usage/getting_started.rst
-   pycti/pycti
+   pyobas/pyobas
 
 
 Indices and tables
