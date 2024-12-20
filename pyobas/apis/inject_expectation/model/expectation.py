@@ -1,10 +1,12 @@
 from enum import Enum
-from uuid import UUID
 from typing import List
+from uuid import UUID
+
 from pydantic import BaseModel
 from thefuzz import fuzz
 
-from pyobas.signatures.types import SignatureTypes, MatchTypes
+from pyobas.signatures.signature_type import SignatureType
+from pyobas.signatures.types import MatchTypes, SignatureTypes
 
 
 class ExpectationTypeEnum(str, Enum):
@@ -38,30 +40,26 @@ class Expectation(BaseModel):
             self.inject_expectation_id,
             inject_expectation={
                 "collector_id": sender_id,
-                "result": (
-                    self.success_label
-                    if success
-                    else self.failure_label
-                ),
+                "result": (self.success_label if success else self.failure_label),
                 "is_success": success,
                 "metadata": metadata,
             },
         )
 
-    def match_alert(self, relevant_signature_types, alert_data):
+    def match_alert(self, relevant_signature_types: list[SignatureType], alert_data):
         relevant_expectation_signatures = [
             signature
             for signature in self.inject_expectation_signatures
-            if signature.type in relevant_signature_types
+            if signature.type in [type.label for type in relevant_signature_types]
         ]
         if not any(relevant_expectation_signatures):
             return False
 
         for relevant_expectation_signature in relevant_expectation_signatures:
             if not (
-                alert_signature_for_type := alert_data[
-                    relevant_expectation_signature.type
-                ]
+                alert_signature_for_type := alert_data.get(
+                    relevant_expectation_signature.type.value
+                )
             ):
                 return False
 
@@ -84,7 +82,8 @@ class Expectation(BaseModel):
 
     @staticmethod
     def match_fuzzy(tested: list[str], target: str, threshold: int):
-        for value in tested:
+        actual_tested = [tested] if isinstance(tested, str) else tested
+        for value in actual_tested:
             ratio = fuzz.ratio(value, target)
             if ratio >= threshold:
                 return True

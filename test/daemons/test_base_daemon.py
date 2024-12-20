@@ -1,9 +1,8 @@
 import unittest
 import unittest.mock
 
-from pyobas.daemons import BaseDaemon
 from pyobas.configuration import Configuration
-
+from pyobas.daemons import BaseDaemon
 from pyobas.exceptions import OpenBASError
 
 TEST_DAEMON_CONFIG_HINTS = {
