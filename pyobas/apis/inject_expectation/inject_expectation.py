@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from pyobas import exceptions as exc
 from pyobas.apis.inject_expectation.model import (

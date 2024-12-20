@@ -6,7 +6,6 @@ import yaml
 from pydantic import BaseModel, Field
 
 from pyobas.configuration.sources import DictionarySource, EnvironmentSource
-from pyobas.exceptions import ConfigurationError
 
 CONFIGURATION_TYPES = str | int | bool | None
 
