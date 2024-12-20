@@ -1,15 +1,14 @@
 from typing import Any, Dict, List
 
 from pyobas import exceptions as exc
+from pyobas.apis.inject_expectation.model import (
+    DetectionExpectation,
+    ExpectationTypeEnum,
+    PreventionExpectation,
+)
 from pyobas.base import RESTManager, RESTObject
 from pyobas.mixins import ListMixin, UpdateMixin
 from pyobas.utils import RequiredOptional
-
-from pyobas.apis.inject_expectation.model import (
-    DetectionExpectation,
-    PreventionExpectation,
-    ExpectationTypeEnum,
-)
 
 
 class InjectExpectation(RESTObject):
