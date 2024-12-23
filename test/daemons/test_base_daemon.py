@@ -15,7 +15,7 @@ TEST_DAEMON_CONFIG_HINTS = {
 TEST_DAEMON_CONFIGURATION = Configuration(config_hints=TEST_DAEMON_CONFIG_HINTS)
 
 
-class TestDaemon(BaseDaemon):
+class DaemonForTest(BaseDaemon):
     def _setup(self):
         pass
 
@@ -39,7 +39,12 @@ def create_mock_daemon(callback: callable = None):
             inner_mock_func()
 
     return (
-        MockDaemon(configuration=TEST_DAEMON_CONFIGURATION, callback=callback),
+        MockDaemon(
+            configuration=TEST_DAEMON_CONFIGURATION,
+            callback=callback,
+            # silence logging in tests
+            logger=unittest.mock.MagicMock(),
+        ),
         mock_setup,
         mock_start_loop,
         inner_mock_func,
@@ -48,13 +53,13 @@ def create_mock_daemon(callback: callable = None):
 
 class TestBaseDaemon(unittest.TestCase):
     def test_when_no_callback_when_complete_config_ctor_ok(self):
-        daemon = TestDaemon(configuration=TEST_DAEMON_CONFIGURATION)
+        daemon = DaemonForTest(configuration=TEST_DAEMON_CONFIGURATION)
 
         self.assertIsInstance(daemon, BaseDaemon)
 
     def test_when_no_callback_when_lacking_config_key_ctor_throws(self):
         with self.assertRaises(Exception):
-            TestDaemon(configuration=Configuration(config_hints={}))
+            DaemonForTest(configuration=Configuration(config_hints={}))
 
     def test_when_no_callback_daemon_cant_start(self):
         daemon, mock_setup, mock_start_loop, _ = create_mock_daemon()
@@ -84,11 +89,11 @@ class TestBaseDaemon(unittest.TestCase):
     def test_when_callback_is_func_with_collector_parameter_daemon_can_call(self):
         daemon, mock_setup, mock_start_loop, _ = create_mock_daemon()
         inner_mock_func = unittest.mock.MagicMock()
-        daemon.set_callback(lambda collector: inner_mock_func)
+        daemon.set_callback(lambda collector: inner_mock_func())
 
         daemon._try_callback()
 
-        inner_mock_func.assert_not_called()
+        inner_mock_func.assert_called_once()
 
     def test_when_callback_is_func_with_other_parameter_daemon_cant_call(self):
         daemon, mock_setup, mock_start_loop, _ = create_mock_daemon()
