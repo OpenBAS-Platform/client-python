@@ -226,6 +226,7 @@ class PingAlive(utils.PingAlive):
     pass
 
 
+### DEPRECATED
 class OpenBASConfigHelper:
     def __init__(self, base_path, variables: Dict):
         self.__config_obj = Configuration(
