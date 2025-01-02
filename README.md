@@ -36,7 +36,7 @@ $ python3 -m pip install -e .[dev,doc]
 $ pre-commit install
 # Create your feature/fix
 # Create tests for your changes
-$ pytest
+$ python -m unittest
 # Push you feature/fix on Github
 $ git add [file(s)]
 $ git commit -m "[descriptive message]"
@@ -62,31 +62,10 @@ To learn about the methods available for executing queries and retrieving their 
 
 ## Tests
 
-### Install dependencies
+The standard `unittest` library is used for running the tests.
 
 ```bash
-$ pip install -r ./test-requirements.txt
-```
-
-[pytest](https://docs.pytest.org/en/7.2.x/) is used to launch the tests.
-
-### Launch tests
-
-#### Prerequisite
-
-Your OpenBAS API should be running.
-Your conftest.py should be configured with your API url, your token, and if applicable, your mTLS cert/key.
-
-#### Launching
-
-Unit tests
-```bash
-$ pytest ./tests/01-unit/
-```
-
-Integration testing
-```bash
-$ pytest ./tests/02-integration/
+$ python -m unittest
 ```
 
 ## About
