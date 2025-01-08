@@ -40,7 +40,7 @@ class ConfigurationHint(BaseModel):
     config files. Additionally, it may define a default value or
     a discrete override value.
     """
-    data: Optional[str] = Field(default=None)
+    data: Optional[CONFIGURATION_TYPES] = Field(default=None)
     """Override value; when set, getting the configuration value for
         the key described in this instance returns this value.
     """
