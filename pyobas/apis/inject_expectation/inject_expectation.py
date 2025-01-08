@@ -35,7 +35,20 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         return result
 
     def expectations_models_for_source(self, source_id: str, **kwargs: Any):
-        # todo improve polymorphism here
+        """Returns all expectations from OpenBAS that have had no result yet
+            from the source_id (e.g. collector).
+
+        :param source_id: the identifier of the collector requesting expectations
+        :type source_id: str
+        :param kwargs: additional data to pass to the endpoint
+        :type kwargs: dict, optional
+
+        :return: a list of expectation objects
+        :rtype: list[DetectionExpectation|PreventionExpectation]
+        """
+        # TODO: we should implement a more clever mechanism to obtain
+        #   specialised Expectation instances rather than just il/elseing
+        #   through this list of possibilities.
         expectations = []
         for expectation_dict in self.expectations_assets_for_source(
             source_id=source_id, **kwargs

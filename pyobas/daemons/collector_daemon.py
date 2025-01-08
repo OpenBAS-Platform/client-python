@@ -6,6 +6,14 @@ from pyobas.utils import PingAlive
 
 
 class CollectorDaemon(BaseDaemon):
+    """Implementation of a daemon of Collector type. Note that it requires
+    specific configuration keys to run its setup.
+    `collector_icon_filepath`: relative path to an icon image (preferably PNG)
+    `collector_id`: unique identifier for the collector (UUIDv4)
+    `collector_period`: time to wait in seconds between each loop execution; note
+    that this time is added to the time the loop takes to run, so the actual total
+    time between each loop start is time_of_loop+period.
+    """
     def _setup(self):
         icon_path = self._configuration.get("collector_icon_filepath")
         icon_name = self._configuration.get("collector_id") + ".png"
