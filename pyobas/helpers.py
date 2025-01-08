@@ -282,6 +282,12 @@ class OpenBASCollectorHelper:
         self.collector_logger = self.__daemon.logger
         self.api = self.__daemon.api
         self.config_helper = config
+        self.config = {
+            "collector_id": config_obj.get("collector_id"),
+            "collector_name": config_obj.get("collector_name"),
+            "collector_type": config_obj.get("collector_type"),
+            "collector_period": config_obj.get("collector_period"),
+        }
 
     def schedule(self, message_callback, delay):
         self.__daemon.set_callback(message_callback)

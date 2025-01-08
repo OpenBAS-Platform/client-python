@@ -14,6 +14,7 @@ class SignatureType:
     the score to use as threshold, defaults to None
     :type match_score: int, optional
     """
+
     def __init__(
         self,
         label: SignatureTypes,
@@ -23,14 +24,6 @@ class SignatureType:
         self.label = label
         self.match_policy = SignatureMatch(match_type, match_score)
 
-    # provided some `data`, formats a dictionary specifying the matching
-    # policy to use by the helper to match expected signatures (from expectations)
-    # with actual, alert signatures (from the security software)
-    # Output: {
-    #   "type": str,
-    #   "data": any,
-    #   "score": (optional) int
-    # }
     def make_struct_for_matching(self, data):
         """Provided some `data`, formats a dictionary specifying the matching
         policy to use by the helper to match expected signatures (from expectations)

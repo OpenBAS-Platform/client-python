@@ -40,6 +40,7 @@ class ConfigurationHint(BaseModel):
     config files. Additionally, it may define a default value or
     a discrete override value.
     """
+
     data: Optional[CONFIGURATION_TYPES] = Field(default=None)
     """Override value; when set, getting the configuration value for
         the key described in this instance returns this value.
@@ -104,6 +105,7 @@ class Configuration:
             defaults to './config.yml' (relative path).
         :type config_file_path: str
     """
+
     def __init__(
         self,
         config_hints: Dict[str, dict | str],

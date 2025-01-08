@@ -10,8 +10,8 @@ from pyobas.signatures.types import MatchTypes, SignatureTypes
 
 
 class ExpectationTypeEnum(str, Enum):
-    """Types of Expectations
-    """
+    """Types of Expectations"""
+
     Detection = "DETECTION"
     Prevention = "PREVENTION"
     Other = "other"
@@ -27,6 +27,7 @@ class ExpectationSignature(BaseModel):
     expectation signature can be a process image name, a command
     line, or any other relevant piece of data.
     """
+
     type: SignatureTypes
     value: str
 
@@ -37,6 +38,7 @@ class Expectation(BaseModel):
     expectation may be that security software has _detected_ it, while
     another expectation may be that the attack was _prevented_.
     """
+
     inject_expectation_id: UUID
     inject_expectation_signatures: List[ExpectationSignature]
 
@@ -69,9 +71,9 @@ class Expectation(BaseModel):
 
     def match_alert(self, relevant_signature_types: list[SignatureType], alert_data):
         """Matches an alert's data against the current expectation signatures
-            to see if the alert is relevant to the current expectation's inject,
-            i.e. this alert was triggered by the execution of the inject to which
-            belongs the expectation.
+        to see if the alert is relevant to the current expectation's inject,
+        i.e. this alert was triggered by the execution of the inject to which
+        belongs the expectation.
 
         :param relevant_signature_types: filter of signature types that we want to consider.
             Only the signature types listed in this collection may be checked for matching.
@@ -154,15 +156,17 @@ class Expectation(BaseModel):
 
 class DetectionExpectation(Expectation):
     """An expectation that is specific to Detection, i.e. that is used
-        by OpenBAS to assert that an inject's execution was detected.
+    by OpenBAS to assert that an inject's execution was detected.
     """
+
     success_label: str = "Detected"
     failure_label: str = "Not Detected"
 
 
 class PreventionExpectation(Expectation):
     """An expectation that is specific to Prevention, i.e. that is used
-        by OpenBAS to assert that an inject's execution was prevented.
+    by OpenBAS to assert that an inject's execution was prevented.
     """
+
     success_label: str = "Prevented"
     failure_label: str = "Not Prevented"

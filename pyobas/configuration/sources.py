@@ -2,8 +2,8 @@ import os
 
 
 class EnvironmentSource:
-    """A utility for fecthing a value in the env vars.
-    """
+    """A utility for fecthing a value in the env vars."""
+
     @classmethod
     def get(cls, env_var: str) -> str | None:
         """Gets the value for the specified env var
@@ -18,8 +18,8 @@ class EnvironmentSource:
 
 
 class DictionarySource:
-    """A utility for fetching a value from within a JSON-like (nested dict) structure
-    """
+    """A utility for fetching a value from within a JSON-like (nested dict) structure"""
+
     # this is quite hacky
     # it only strictly handles two levels of keys in a dict
     @classmethod

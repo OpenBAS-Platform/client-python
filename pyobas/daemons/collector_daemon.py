@@ -14,6 +14,7 @@ class CollectorDaemon(BaseDaemon):
     that this time is added to the time the loop takes to run, so the actual total
     time between each loop start is time_of_loop+period.
     """
+
     def _setup(self):
         icon_path = self._configuration.get("collector_icon_filepath")
         icon_name = self._configuration.get("collector_id") + ".png"

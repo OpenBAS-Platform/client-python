@@ -47,7 +47,7 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         :rtype: list[DetectionExpectation|PreventionExpectation]
         """
         # TODO: we should implement a more clever mechanism to obtain
-        #   specialised Expectation instances rather than just il/elseing
+        #   specialised Expectation instances rather than just if/elseing
         #   through this list of possibilities.
         expectations = []
         for expectation_dict in self.expectations_assets_for_source(

@@ -23,6 +23,7 @@ class BaseDaemon(ABC):
     :param api_client: an API client that will provide connectivity with other systems.
     :type api_client: Any
     """
+
     def __init__(
         self,
         configuration: Configuration,
