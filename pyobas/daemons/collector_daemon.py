@@ -4,7 +4,6 @@ import time
 from pyobas.daemons import BaseDaemon
 from pyobas.utils import PingAlive
 
-
 DEFAULT_PERIOD_SECONDS = 60
 
 
