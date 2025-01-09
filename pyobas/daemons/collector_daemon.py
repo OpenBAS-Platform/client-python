@@ -5,6 +5,9 @@ from pyobas.daemons import BaseDaemon
 from pyobas.utils import PingAlive
 
 
+DEFAULT_PERIOD_SECONDS = 60
+
+
 class CollectorDaemon(BaseDaemon):
     """Implementation of a daemon of Collector type. Note that it requires
     specific configuration keys to run its setup.
@@ -16,6 +19,8 @@ class CollectorDaemon(BaseDaemon):
     """
 
     def _setup(self):
+        if self._configuration.get("collector_period") is None:
+            self._configuration.set("collector_period", DEFAULT_PERIOD_SECONDS)
         icon_path = self._configuration.get("collector_icon_filepath")
         icon_name = self._configuration.get("collector_id") + ".png"
         with open(icon_path, "rb") as icon_file_handle:
