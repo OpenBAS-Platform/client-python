@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "OpenCTI client for Python"
+project = "OpenBAS client for Python"
 copyright = "2024, Filigran"
-author = "OpenCTI Project"
+author = "OpenBAS Project"
 
 # The full version, including alpha/beta/rc tags
-release = "5.12.20"
+release = "1.10.1"
 
 master_doc = "index"
 

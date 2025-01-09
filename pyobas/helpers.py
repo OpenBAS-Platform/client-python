@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import os.path
 import re
 import sched
 import ssl
@@ -8,14 +9,15 @@ import tempfile
 import threading
 import time
 import traceback
-from datetime import datetime, timezone
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List
 
 import pika
-import yaml
 from thefuzz import fuzz
 
 from pyobas import OpenBAS, utils
+from pyobas.configuration import Configuration
+from pyobas.daemons import CollectorDaemon
+from pyobas.exceptions import ConfigurationError
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
@@ -75,69 +77,39 @@ def ssl_verify_locations(ssl_context, certdata):
         ssl_context.load_verify_locations(cafile=certdata)
 
 
-def get_config_variable(
-    env_var: str,
-    yaml_path: List,
-    config: Dict = {},
-    isNumber: Optional[bool] = False,
-    default=None,
-    required=False,
-) -> Union[bool, int, None, str]:
-    """[summary]
-
-    :param env_var: environment variable name
-    :param yaml_path: path to yaml config
-    :param config: client config dict, defaults to {}
-    :param isNumber: specify if the variable is a number, defaults to False
-    :param default: default value
-    """
-
-    if os.getenv(env_var) is not None:
-        result = os.getenv(env_var)
-    elif yaml_path is not None:
-        if yaml_path[0] in config and yaml_path[1] in config[yaml_path[0]]:
-            result = config[yaml_path[0]][yaml_path[1]]
-        else:
-            return default
-    else:
-        return default
-
-    if result in TRUTHY:
-        return True
-    if result in FALSY:
-        return False
-    if isNumber:
-        return int(result)
-
-    if (
-        required
-        and default is None
-        and (result is None or (isinstance(result, str) and len(result) == 0))
-    ):
-        raise ValueError("The configuration " + env_var + " is required")
-
-    if isinstance(result, str) and len(result) == 0:
-        return default
-
-    return result
-
-
 def create_mq_ssl_context(config) -> ssl.SSLContext:
-    use_ssl_ca = get_config_variable("MQ_USE_SSL_CA", ["mq", "use_ssl_ca"], config)
-    use_ssl_cert = get_config_variable(
-        "MQ_USE_SSL_CERT", ["mq", "use_ssl_cert"], config
+    config_obj = Configuration(
+        config_hints={
+            "MQ_USE_SSL_CA": {
+                "env": "MQ_USE_SSL_CA",
+                "file_path": ["mq", "use_ssl_ca"],
+            },
+            "MQ_USE_SSL_CERT": {
+                "env": "MQ_USE_SSL_CERT",
+                "file_path": ["mq", "use_ssl_cert"],
+            },
+            "MQ_USE_SSL_KEY": {
+                "env": "MQ_USE_SSL_KEY",
+                "file_path": ["mq", "use_ssl_key"],
+            },
+            "MQ_USE_SSL_REJECT_UNAUTHORIZED": {
+                "env": "MQ_USE_SSL_REJECT_UNAUTHORIZED",
+                "file_path": ["mq", "use_ssl_reject_unauthorized"],
+                "is_number": False,
+                "default": False,
+            },
+            "MQ_USE_SSL_PASSPHRASE": {
+                "env": "MQ_USE_SSL_PASSPHRASE",
+                "file_path": ["mq", "use_ssl_passphrase"],
+            },
+        },
+        config_values=config,
     )
-    use_ssl_key = get_config_variable("MQ_USE_SSL_KEY", ["mq", "use_ssl_key"], config)
-    use_ssl_reject_unauthorized = get_config_variable(
-        "MQ_USE_SSL_REJECT_UNAUTHORIZED",
-        ["mq", "use_ssl_reject_unauthorized"],
-        config,
-        False,
-        False,
-    )
-    use_ssl_passphrase = get_config_variable(
-        "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
-    )
+    use_ssl_ca = config_obj.get("MQ_USE_SSL_CA")
+    use_ssl_cert = config_obj.get("MQ_USE_SSL_CERT")
+    use_ssl_key = config_obj.get("MQ_USE_SSL_KEY")
+    use_ssl_reject_unauthorized = config_obj.get("MQ_USE_SSL_REJECT_UNAUTHORIZED")
+    use_ssl_passphrase = config_obj.get("MQ_USE_SSL_PASSPHRASE")
     ssl_context = ssl.create_default_context()
     # If no rejection allowed, use private function to generate unverified context
     if not use_ssl_reject_unauthorized:
@@ -154,7 +126,7 @@ class ListenQueue(threading.Thread):
     def __init__(
         self,
         config: Dict,
-        injector_config: Dict,
+        injector_config,
         logger,
         callback,
     ) -> None:
@@ -250,64 +222,38 @@ class ListenQueue(threading.Thread):
             self.thread.join()
 
 
-class PingAlive(threading.Thread):
-    def __init__(self, api, config, logger, ping_type) -> None:
-        threading.Thread.__init__(self)
-        self.ping_type = ping_type
-        self.api = api
-        self.config = config
-        self.logger = logger
-        self.in_error = False
-        self.exit_event = threading.Event()
-
-    def ping(self) -> None:
-        while not self.exit_event.is_set():
-            try:
-                if self.ping_type == "injector":
-                    self.api.injector.create(self.config, False)
-                else:
-                    self.api.collector.create(self.config, False)
-            except Exception as err:  # pylint: disable=broad-except
-                self.logger.error("Error pinging the API: " + str(err))
-            self.exit_event.wait(40)
-
-    def run(self) -> None:
-        self.logger.info("Starting PingAlive thread")
-        self.ping()
-
-    def stop(self) -> None:
-        self.logger.info("Preparing PingAlive for clean shutdown")
-        self.exit_event.set()
+class PingAlive(utils.PingAlive):
+    pass
 
 
+### DEPRECATED
 class OpenBASConfigHelper:
     def __init__(self, base_path, variables: Dict):
-        config_file_path = os.path.dirname(os.path.abspath(base_path)) + "/config.yml"
-        self.file_config = (
-            yaml.load(open(config_file_path), Loader=yaml.FullLoader)
-            if os.path.isfile(config_file_path)
-            else {}
+        self.__config_obj = Configuration(
+            config_hints=variables,
+            config_file_path=os.path.join(
+                os.path.dirname(os.path.abspath(base_path)), "config.yml"
+            ),
         )
-        self.variables = variables
 
     def get_conf(self, variable, is_number=None, default=None, required=None):
-        var = self.variables.get(variable)
-        if var is None:
-            return default
-        # If direct variable
-        if var.get("data") is not None:
-            return var.get("data")
-        # Else if file or env variable
-        return get_config_variable(
-            env_var=var["env"],
-            yaml_path=var["file_path"],
-            config=self.file_config,
-            isNumber=var["is_number"] if "is_number" in var else is_number,
-            default=var["default"] if "default" in var else default,
-            required=required,
-        )
+        result = None
+        try:
+            result = self.__config_obj.get(variable) or default
+        except ConfigurationError:
+            result = default
+        finally:
+            if result is None and default is None and required:
+                raise ValueError(
+                    f"Could not find required key {variable} with no available default."
+                )
+            return result
+
+    def to_configuration(self):
+        return self.__config_obj
 
 
+### DEPRECATED
 class OpenBASCollectorHelper:
     def __init__(
         self,
@@ -316,81 +262,36 @@ class OpenBASCollectorHelper:
         security_platform_type=None,
         connect_run_and_terminate: bool = False,
     ) -> None:
-        self.config_helper = config
-        self.api = OpenBAS(
-            url=config.get_conf("openbas_url"),
-            token=config.get_conf("openbas_token"),
-        )
-
-        self.logger_class = utils.logger(
-            config.get_conf("collector_log_level", default="info").upper(),
-            config.get_conf("collector_json_logging", default=True),
-        )
-        self.collector_logger = self.logger_class(config.get_conf("collector_name"))
-
-        icon_name = config.get_conf("collector_id") + ".png"
-
-        security_platform_id = None
+        config_obj = config.to_configuration()
+        # ensure the icon path is set in config
+        config_obj.set("collector_icon_filepath", icon)
+        # override the platform in config if passed this way
         if security_platform_type is not None:
-            collector_icon = (icon_name, open(icon, "rb"), "image/png")
-            document = self.api.document.upsert(document={}, file=collector_icon)
-            security_platform = self.api.security_platform.upsert(
-                {
-                    "asset_name": config.get_conf("collector_name"),
-                    "asset_external_reference": config.get_conf("collector_id"),
-                    "security_platform_type": security_platform_type,
-                    "security_platform_logo_light": document.get("document_id"),
-                    "security_platform_logo_dark": document.get("document_id"),
-                }
-            )
-            security_platform_id = security_platform.get("asset_id")
+            config_obj.set("collector_platform", security_platform_type)
 
+        self.__daemon = CollectorDaemon(
+            configuration=config_obj,
+            callback=None,
+        )
+
+        self.__daemon.logger.warning(
+            f"DEPRECATED: this collector should be migrated to use {CollectorDaemon}."
+        )
+
+        # backwards compatibility
+        self.collector_logger = self.__daemon.logger
+        self.api = self.__daemon.api
+        self.config_helper = config
         self.config = {
-            "collector_id": config.get_conf("collector_id"),
-            "collector_name": config.get_conf("collector_name"),
-            "collector_type": config.get_conf("collector_type"),
-            "collector_period": config.get_conf("collector_period"),
-            "collector_security_platform": security_platform_id,
+            "collector_id": config_obj.get("collector_id"),
+            "collector_name": config_obj.get("collector_name"),
+            "collector_type": config_obj.get("collector_type"),
+            "collector_period": config_obj.get("collector_period"),
         }
 
-        collector_icon = (icon_name, open(icon, "rb"), "image/png")
-        self.api.collector.create(self.config, collector_icon)
-        # self.api.injector.create(self.config)
-        self.scheduler = sched.scheduler(time.time, time.sleep)
-        # Start ping thread
-        if not connect_run_and_terminate:
-            self.ping = PingAlive(
-                self.api, self.config, self.collector_logger, "collector"
-            )
-            self.ping.start()
-        self.listen_queue = None
-
-    def _schedule(self, scheduler, message_callback, delay):
-        # Execute
-        try:
-            message_callback()
-        except Exception as err:  # pylint: disable=broad-except
-            self.collector_logger.error("Error collecting: " + str(err))
-
-        # Then schedule the next execution
-        scheduler.enter(delay, 1, self._schedule, (scheduler, message_callback, delay))
-
     def schedule(self, message_callback, delay):
-        # Start execution directly
-        try:
-            message_callback()
-            now = datetime.now(timezone.utc).isoformat()
-            self.api.collector.update(
-                self.config_helper.get_conf("collector_id"),
-                {"collector_last_execution": now},
-            )
-        except Exception as err:  # pylint: disable=broad-except
-            self.collector_logger.error("Error collecting: " + str(err))
-        # Then schedule the next execution
-        self.scheduler.enter(
-            delay, 1, self._schedule, (self.scheduler, message_callback, delay)
-        )
-        self.scheduler.run()
+        self.__daemon.set_callback(message_callback)
+        self.__daemon.start()
 
 
 class OpenBASInjectorHelper:

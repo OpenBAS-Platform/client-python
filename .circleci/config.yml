@@ -12,10 +12,7 @@ jobs:
       - checkout
       - run:
           name: install dependencies
-          command: pip3 install -r requirements.txt --user
-      - run:
-          name: install test-dependencies
-          command: pip3 install -r test-requirements.txt --user
+          command: pip3 install -r requirements.txt -r test-requirements.txt --user
       - run:
           name: confirm black version
           command: black --version
@@ -41,9 +38,6 @@ jobs:
       - run:
           name: install dependencies
           command: pip3 install -r requirements.txt --user
-      - run:
-          name: install test-dependencies
-          command: pip3 install -r test-requirements.txt --user
       - run:
           name: run tests
           command: python -m unittest
@@ -72,7 +66,7 @@ jobs:
       - run:
           name: install dependencies
           command: >
-            pip3 install --user -r requirements.txt -r test-requirements.txt
+            pip3 install --user -r requirements.txt
       - run:
           name: check version
           command: |
@@ -172,6 +166,7 @@ workflows:
           requires:
             - ensure_formatting
             - linter
+            - test
       - deploy:
           requires:
             - build

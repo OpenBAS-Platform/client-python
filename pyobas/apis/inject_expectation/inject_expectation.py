@@ -1,6 +1,11 @@
 from typing import Any, Dict
 
 from pyobas import exceptions as exc
+from pyobas.apis.inject_expectation.model import (
+    DetectionExpectation,
+    ExpectationTypeEnum,
+    PreventionExpectation,
+)
 from pyobas.base import RESTManager, RESTObject
 from pyobas.mixins import ListMixin, UpdateMixin
 from pyobas.utils import RequiredOptional
@@ -28,6 +33,45 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         path = f"{self.path}/assets/" + source_id
         result = self.openbas.http_get(path, **kwargs)
         return result
+
+    def expectations_models_for_source(self, source_id: str, **kwargs: Any):
+        """Returns all expectations from OpenBAS that have had no result yet
+            from the source_id (e.g. collector).
+
+        :param source_id: the identifier of the collector requesting expectations
+        :type source_id: str
+        :param kwargs: additional data to pass to the endpoint
+        :type kwargs: dict, optional
+
+        :return: a list of expectation objects
+        :rtype: list[DetectionExpectation|PreventionExpectation]
+        """
+        # TODO: we should implement a more clever mechanism to obtain
+        #   specialised Expectation instances rather than just if/elseing
+        #   through this list of possibilities.
+        expectations = []
+        for expectation_dict in self.expectations_assets_for_source(
+            source_id=source_id, **kwargs
+        ):
+            if (
+                expectation_dict["inject_expectation_type"]
+                == ExpectationTypeEnum.Detection.value
+            ):
+                expectations.append(
+                    DetectionExpectation(**expectation_dict, api_client=self)
+                )
+            elif (
+                expectation_dict["inject_expectation_type"]
+                == ExpectationTypeEnum.Prevention.value
+            ):
+                expectations.append(
+                    PreventionExpectation(**expectation_dict, api_client=self)
+                )
+            else:
+                expectations.append(
+                    PreventionExpectation(**expectation_dict, api_client=self)
+                )
+        return expectations
 
     @exc.on_http_error(exc.OpenBASUpdateError)
     def prevention_expectations_for_source(

@@ -67,6 +67,10 @@ class OpenBASCreateError(OpenBASError):
     pass
 
 
+class ConfigurationError(OpenBASError):
+    pass
+
+
 # For an explanation of how these type-hints work see:
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 #
@@ -90,6 +94,7 @@ def on_http_error(error: Type[Exception]) -> Callable[[__F], __F]:
 
 # Export manually to keep mypy happy
 __all__ = [
+    "ConfigurationError",
     "OpenBASAuthenticationError",
     "OpenBASHttpError",
     "OpenBASParsingError",
