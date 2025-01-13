@@ -290,6 +290,10 @@ class OpenBASCollectorHelper:
         }
 
     def schedule(self, message_callback, delay):
+        # backwards compatibility: when older style call sets delay
+        # and no config exists,
+        if self.__daemon._configuration.get("collector_period") is None:
+            self.__daemon._configuration.set("collector_period", delay)
         self.__daemon.set_callback(message_callback)
         self.__daemon.start()
 
