@@ -176,6 +176,9 @@ workflows:
       - notify_rolling:
           requires:
             - build
+          filters:
+            branches:
+              only: /main/
       - notify:
           requires:
             - deploy
