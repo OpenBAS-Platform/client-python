@@ -161,8 +161,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
           requires:
             - ensure_formatting
             - linter
