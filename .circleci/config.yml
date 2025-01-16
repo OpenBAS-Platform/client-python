@@ -160,9 +160,7 @@ workflows:
       - build:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?\.?(\w)*/
-            branches:
-              ignore: /.*/
+              only: /.*/
           requires:
             - ensure_formatting
             - linter
@@ -178,6 +176,9 @@ workflows:
       - notify_rolling:
           requires:
             - build
+          filters:
+            branches:
+              only: /main/
       - notify:
           requires:
             - deploy
