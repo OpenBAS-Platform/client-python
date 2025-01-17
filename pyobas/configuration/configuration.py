@@ -1,6 +1,6 @@
 import os
 import os.path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 import yaml
 from pydantic import BaseModel, Field
