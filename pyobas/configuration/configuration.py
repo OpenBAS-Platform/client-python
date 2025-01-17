@@ -1,13 +1,13 @@
 import os
 import os.path
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import yaml
 from pydantic import BaseModel, Field
 
 from pyobas.configuration.sources import DictionarySource, EnvironmentSource
 
-CONFIGURATION_TYPES = str | int | bool | None
+CONFIGURATION_TYPES = str | int | bool | Any | None
 
 
 def is_truthy(value: str) -> bool:
