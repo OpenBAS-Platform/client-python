@@ -1,7 +1,7 @@
 ---
 version: 2.1
 orbs:
-  slack: circleci/slack@4.15.0
+  slack: circleci/slack@5.1.1
   ms-teams: cloudradar-monitoring/ms-teams@0.0.1
 jobs:
   ensure_formatting:
@@ -47,6 +47,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - run: apk update && apk upgrade && apk --no-cache add bash
       - run:
           name: flake8
           command: flake8 --ignore=E,W ~/repo
