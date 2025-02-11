@@ -1,9 +1,10 @@
 
-import os
-import logging
-import time
-import requests
 import argparse
+import logging
+import os
+import time
+
+import requests
 from OBAS_utils.release_utils import closeRelease
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
