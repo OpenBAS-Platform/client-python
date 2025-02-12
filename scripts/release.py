@@ -4,7 +4,7 @@ import os
 import time
 
 import requests
-from OBAS_utils.release_utils import closeRelease
+from OBAS_utils.release_utils import closeRelease, check_release
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
@@ -123,4 +123,4 @@ logging.info(
 )
 
 if not args.dev:
-    time.sleep(600)
+    check_release("https://pypi.org/simple/pyobas/", "pyobas-" + new_version, 10)
