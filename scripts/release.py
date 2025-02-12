@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import time
 
 import requests
 from OBAS_utils.release_utils import closeRelease, check_release
