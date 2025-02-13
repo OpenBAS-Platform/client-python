@@ -240,6 +240,11 @@ class OpenBASConfigHelper:
         result = None
         try:
             result = self.__config_obj.get(variable) or default
+            if is_number and result is not None:
+                try:
+                    result = int(result)
+                except (ValueError, TypeError):
+                    result = default if isinstance(default, (int, float)) else None
         except ConfigurationError:
             result = default
         finally:
