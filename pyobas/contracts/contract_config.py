@@ -75,6 +75,11 @@ class ContractElement(ABC):
     def __post_init__(self):
         self.type = self.get_type
 
+@dataclass
+class ContractOutput(ABC):
+    field: str
+    type: str
+    labels: List[str]
 
 @dataclass
 class ContractCardinalityElement(ContractElement, ABC):
@@ -109,12 +114,17 @@ class Contract:
     contract_attack_patterns_external_ids: List[str] = field(default_factory=list)
     is_atomic_testing: bool = True
     platforms: List[str] = field(default_factory=list)
+    outputs: List[ContractOutput] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
         self.contract_attack_patterns_external_ids.append(var)
 
     def add_variable(self, var: ContractVariable):
         self.variables.append(var)
+
+    def add_output(self, var: ContractOutput):
+        self.outputs.append(var)
+        return self
 
 
 @dataclass
