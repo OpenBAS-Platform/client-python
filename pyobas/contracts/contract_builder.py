@@ -36,5 +36,8 @@ class ContractBuilder:
             self.fields.append(element)
         return self
 
-    def build(self) -> List[ContractElement]:
+    def build_fields(self) -> List[ContractElement]:
         return self.fields
+
+    def build_outputs(self) -> List[ContractOutputElement]:
+        return self.outputs
