@@ -9,6 +9,7 @@ class ContractBuilder:
 
     def __init__(self):
         self.fields = []
+        self.outputs = []
 
     def add_fields(self, fields: List[ContractElement]):
         self.fields = self.fields + fields
