@@ -14,7 +14,7 @@ class SupportedLanguage(str, Enum):
     en: str = "en"
 
 
-class ContractType(str, Enum):
+class ContractFieldType(str, Enum):
     Text: str = "text"
     Number: str = "number"
     Tuple: str = "tuple"
@@ -30,6 +30,14 @@ class ContractType(str, Enum):
     Asset: str = "asset"
     AssetGroup: str = "asset-group"
     Payload: str = "payload"
+
+
+class ContractOutputType(str, Enum):
+    Text: str = "text"
+    Number: str = "number"
+    Port: str = "port"
+    IPv4: str = "ipv4"
+    IPv6: str = "ipv6"
 
 
 class ExpectationType(str, Enum):
@@ -53,7 +61,7 @@ class Expectation:
 @dataclass
 class LinkedFieldModel:
     key: str
-    type: ContractType
+    type: ContractFieldType
 
 
 @dataclass
@@ -75,16 +83,19 @@ class ContractElement(ABC):
     def __post_init__(self):
         self.type = self.get_type
 
-@dataclass
-class ContractOutput(ABC):
-    field: str
-    type: str
-    labels: List[str]
 
 @dataclass
 class ContractCardinalityElement(ContractElement, ABC):
     cardinality: str = ContractCardinality.One
     defaultValue: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ContractOutputElement(ABC):
+    type: str
+    field: str
+    labels: List[str]
+    isMultiple: bool
 
 
 @dataclass
@@ -101,6 +112,7 @@ class Contract:
     contract_id: str
     label: dict[SupportedLanguage, str]
     fields: List[ContractElement]
+    outputs: List[ContractOutputElement]
     config: ContractConfig
     manual: bool
     variables: List[ContractVariable] = field(
@@ -114,7 +126,6 @@ class Contract:
     contract_attack_patterns_external_ids: List[str] = field(default_factory=list)
     is_atomic_testing: bool = True
     platforms: List[str] = field(default_factory=list)
-    outputs: List[ContractOutput] = field(default_factory=list)
 
     def add_attack_pattern(self, var: str):
         self.contract_attack_patterns_external_ids.append(var)
@@ -122,16 +133,12 @@ class Contract:
     def add_variable(self, var: ContractVariable):
         self.variables.append(var)
 
-    def add_output(self, var: ContractOutput):
-        self.outputs.append(var)
-        return self
-
 
 @dataclass
 class ContractTeam(ContractCardinalityElement):
     @property
     def get_type(self) -> str:
-        return ContractType.Team.value
+        return ContractFieldType.Team.value
 
 
 @dataclass
@@ -141,7 +148,7 @@ class ContractText(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Text.value
+        return ContractFieldType.Text.value
 
 
 def prepare_contracts(contracts):
@@ -171,7 +178,7 @@ class ContractTuple(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Tuple.value
+        return ContractFieldType.Tuple.value
 
 
 @dataclass
@@ -182,7 +189,7 @@ class ContractTextArea(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Textarea.value
+        return ContractFieldType.Textarea.value
 
 
 @dataclass
@@ -192,7 +199,7 @@ class ContractCheckbox(ContractElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Checkbox.value
+        return ContractFieldType.Checkbox.value
 
 
 @dataclass
@@ -200,7 +207,7 @@ class ContractAttachment(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Attachment.value
+        return ContractFieldType.Attachment.value
 
 
 @dataclass
@@ -210,7 +217,7 @@ class ContractExpectations(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Expectation.value
+        return ContractFieldType.Expectation.value
 
 
 @dataclass
@@ -220,7 +227,7 @@ class ContractSelect(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Select.value
+        return ContractFieldType.Select.value
 
 
 @dataclass
@@ -228,7 +235,7 @@ class ContractAsset(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Asset.value
+        return ContractFieldType.Asset.value
 
 
 @dataclass
@@ -236,7 +243,7 @@ class ContractAssetGroup(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.AssetGroup.value
+        return ContractFieldType.AssetGroup.value
 
 
 @dataclass
@@ -244,4 +251,4 @@ class ContractPayload(ContractCardinalityElement):
 
     @property
     def get_type(self) -> str:
-        return ContractType.Payload.value
+        return ContractFieldType.Payload.value

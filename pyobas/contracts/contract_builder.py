@@ -1,16 +1,21 @@
 from typing import List
 
-from pyobas.contracts.contract_config import ContractElement
+from pyobas.contracts.contract_config import ContractElement, ContractOutputElement
 
 
 class ContractBuilder:
     fields: List[ContractElement]
+    outputs: List[ContractOutputElement]
 
     def __init__(self):
         self.fields = []
 
     def add_fields(self, fields: List[ContractElement]):
         self.fields = self.fields + fields
+        return self
+
+    def add_outputs(self, outputs: List[ContractOutputElement]):
+        self.outputs = self.outputs + outputs
         return self
 
     def mandatory(self, element: ContractElement):
