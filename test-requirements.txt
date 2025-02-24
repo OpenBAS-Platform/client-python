@@ -1,4 +1,4 @@
-black==25.0.1
+black==25.1.0
 isort>=5.10
 build>=0.7
 isort>=5.10
