@@ -36,6 +36,7 @@ class ContractOutputType(str, Enum):
     Text: str = "text"
     Number: str = "number"
     Port: str = "port"
+    PortsScan: str = "portscan"
     IPv4: str = "ipv4"
     IPv6: str = "ipv6"
 
@@ -70,6 +71,8 @@ class ContractElement(ABC):
     label: str
     type: str = field(default="", init=False)
     mandatoryGroups: List[str] = None
+    mandatoryConditionField: str = None
+    mandatoryConditionValue: str = None
     linkedFields: List["ContractElement"] = field(default_factory=list)
     linkedValues: List[str] = field(default_factory=list)
     mandatory: bool = False
@@ -95,6 +98,7 @@ class ContractOutputElement(ABC):
     type: str
     field: str
     labels: List[str]
+    isFindingCompatible: bool
     isMultiple: bool
 
 
