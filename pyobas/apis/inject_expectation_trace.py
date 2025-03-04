@@ -6,7 +6,8 @@ from pyobas.utils import RequiredOptional
 class InjectExpectationTrace(RESTObject):
     _id_attr = "inject_expectation_trace_id"
 
-class InjectExpectationTraceManager(RESTManager,CreateMixin):
+
+class InjectExpectationTraceManager(CreateMixin, RESTManager):
     _path = "/inject-expectations-traces"
     _obj_cls = InjectExpectationTrace
     _create_attrs = RequiredOptional(
@@ -16,4 +17,3 @@ class InjectExpectationTraceManager(RESTManager,CreateMixin):
                   "inject_expectation_trace_alert_link",
                   "inject_expectation_trace_date",),
     )
-
