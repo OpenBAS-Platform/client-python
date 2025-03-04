@@ -12,5 +12,6 @@ from .payload import *  # noqa: F401,F403
 from .security_platform import *  # noqa: F401,F403
 from .team import *  # noqa: F401,F403
 from .user import *  # noqa: F401,F403
+from .inject_expectation_trace import *  # noqa: F401,F403
 
 __all__ = [name for name in dir() if not name.startswith("_")]
