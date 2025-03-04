@@ -54,11 +54,13 @@ $ pip install -e .
 
 ### Client usage
 
-To learn about how to use the OpenBAS Python client and read some examples and cases, refer to [the client documentation](https://openbas-client-for-python.readthedocs.io/en/latest/client_usage/getting_started.html).
+To learn about how to use the OpenBAS Python client and read some examples and cases,
+refer to [the client documentation](https://openbas-client-for-python.readthedocs.io/en/latest/client_usage/getting_started.html).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://openbas-client-for-python.readthedocs.io/en/latest/pyobas/pyobas.html).
+To learn about the methods available for executing queries and retrieving their answers,
+refer to [the client API Reference](https://openbas-client-for-python.readthedocs.io/en/latest/pyobas/pyobas.html).
 
 ## Tests
 
