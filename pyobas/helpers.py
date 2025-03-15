@@ -278,8 +278,11 @@ class OpenBASCollectorHelper:
             f"DEPRECATED: this collector should be migrated to use {CollectorDaemon}."
         )
 
-        # backwards compatibility
-        self.collector_logger = self.__daemon.logger
+        self.logger_class = utils.logger(
+            config.get_conf("collector_log_level", default="error").upper(),
+            config.get_conf("collector_json_logging", default=True),
+        )
+        self.collector_logger = self.logger_class(config.get_conf("collector_name"))
         self.api = self.__daemon.api
         self.config_helper = config
         self.config = {
@@ -323,7 +326,7 @@ class OpenBASInjectorHelper:
         }
 
         self.logger_class = utils.logger(
-            config.get_conf("injector_log_level", default="info").upper(),
+            config.get_conf("injector_log_level", default="error").upper(),
             config.get_conf("injector_json_logging", default=True),
         )
         self.injector_logger = self.logger_class(config.get_conf("injector_name"))
