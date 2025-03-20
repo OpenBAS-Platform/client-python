@@ -12,7 +12,7 @@ class InjectExpectationTraceManager(CreateMixin, RESTManager):
     _obj_cls = InjectExpectationTrace
     _create_attrs = RequiredOptional(
         required=("inject_expectation_trace_expectation",
-                  "inject_expectation_trace_collector",
+                  "inject_expectation_trace_source_id",
                   "inject_expectation_trace_alert_name",
                   "inject_expectation_trace_alert_link",
                   "inject_expectation_trace_date",),
