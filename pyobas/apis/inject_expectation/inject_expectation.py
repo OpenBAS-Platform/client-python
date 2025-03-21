@@ -25,7 +25,13 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         self, source_id: str, expiration_time: int = None, **kwargs: Any
     ) -> Dict[str, Any]:
         path = f"{self.path}/assets/" + source_id
-        result = self.openbas.http_get(path, query_data={'expiration_time': expiration_time} if expiration_time else None, **kwargs)
+        result = self.openbas.http_get(
+            path,
+            query_data=(
+                {"expiration_time": expiration_time} if expiration_time else None
+            ),
+            **kwargs,
+        )
         return result
 
     def expectations_models_for_source(self, source_id: str, **kwargs: Any):
@@ -80,7 +86,13 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         self, source_id: str, expiration_time: int = None, **kwargs: Any
     ) -> Dict[str, Any]:
         path = f"{self.path}/detection/" + source_id
-        result = self.openbas.http_get(path, query_data={'expiration_time': expiration_time} if expiration_time else None, **kwargs)
+        result = self.openbas.http_get(
+            path,
+            query_data=(
+                {"expiration_time": expiration_time} if expiration_time else None
+            ),
+            **kwargs,
+        )
         return result
 
     @exc.on_http_error(exc.OpenBASUpdateError)
