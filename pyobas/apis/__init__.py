@@ -4,6 +4,7 @@ from .document import *  # noqa: F401,F403
 from .endpoint import *  # noqa: F401,F403
 from .inject import *  # noqa: F401,F403
 from .inject_expectation import *  # noqa: F401,F403
+from .inject_expectation_trace import *  # noqa: F401,F403
 from .injector import *  # noqa: F401,F403
 from .kill_chain_phase import *  # noqa: F401,F403
 from .me import *  # noqa: F401,F403
