@@ -23,7 +23,7 @@ copyright = "2024, Filigran"
 author = "OpenBAS Project"
 
 # The full version, including alpha/beta/rc tags
-release = "1.10.1"
+release = "1.12.2"
 
 master_doc = "index"
 
