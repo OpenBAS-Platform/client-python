@@ -15,22 +15,35 @@ on:
         type: string
         default: ''
         required: true
+    secrets:
+      RELEASE_TOKEN: 
+        required: true
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client-python
     steps:
       - name: checkout repo content
         uses: actions/checkout@v4
+        with:
+          repository: OpenBAS-Platform/client-python
+          ref: ${{ inputs.branch_client_python }}
+          path: client-python
       - name: setup python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8 #install the python needed
+          python-version: 3.11
       - name: Install dependencies
         run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com".insteadOf https://github.com
           python -m pip install --upgrade pip
           if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: execute py script # run file
         run: |
-          python scripts/release.py ${{ github.event.inputs.branch_client_python }} ${{ github.event.inputs.previous_version }} ${{ github.event.inputs.new_version }} ${{ github.token }}
+          python scripts/release.py ${{ inputs.branch_client_python }} ${{ inputs.previous_version }} ${{ inputs.new_version }} ${{ secrets.RELEASE_TOKEN }}

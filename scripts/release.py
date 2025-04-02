@@ -21,7 +21,7 @@ parser.add_argument(
     "github_token", help="The github token to use for the release note.", type=str
 )
 parser.add_argument(
-    "--dev", help="Flag to prevent pushing the release.", action="store_false"
+    "--dev", help="Flag to prevent pushing the release.", action="store_true"
 )
 args = parser.parse_args()
 
@@ -51,9 +51,9 @@ with open("./pyobas/_version.py", "w") as file:
 
 # Commit the change
 logging.info("[client-python] Pushing to " + branch_client_python)
-os.system('git commit -a -m "[client] Release ' + new_version + '" > /dev/null 2>&1')
+os.system('git commit -a -m "[client] Release ' + new_version + '"')
 if not args.dev:
-    os.system("git push origin " + branch_client_python + " > /dev/null 2>&1")
+    os.system("git push origin " + branch_client_python)
 
 logging.info("[client-python] Tagging")
 os.system("git tag -f " + new_version)
