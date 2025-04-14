@@ -1,3 +1,6 @@
+from typing import Any, Dict, List
+
+from pyobas import exceptions as exc
 from pyobas.base import RESTManager, RESTObject
 from pyobas.mixins import CreateMixin
 from pyobas.utils import RequiredOptional
@@ -19,3 +22,15 @@ class InjectExpectationTraceManager(CreateMixin, RESTManager):
             "inject_expectation_trace_date",
         ),
     )
+
+    @exc.on_http_error(exc.OpenBASUpdateError)
+    def bulk_create(
+        self, payload: Dict[str, List[Dict[str, str]]], **kwargs: Any
+    ) -> dict[str, Any]:
+        path = f"{self.path}/bulk"
+        result = self.openbas.http_post(
+            path,
+            post_data=payload,
+            **kwargs,
+        )
+        return result
