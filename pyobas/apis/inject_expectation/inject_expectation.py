@@ -105,3 +105,14 @@ class InjectExpectationManager(ListMixin, UpdateMixin, RESTManager):
         path = f"{self.path}/{inject_expectation_id}"
         result = self.openbas.http_put(path, post_data=inject_expectation, **kwargs)
         return result
+
+    @exc.on_http_error(exc.OpenBASUpdateError)
+    def bulk_update(
+        self,
+        inject_expectation_input_by_id: Dict[str, Dict[str, Any]],
+        **kwargs: Any,
+    ) -> None:
+        path = f"{self.path}/bulk"
+        self.openbas.http_put(
+            path, post_data={"inputs": inject_expectation_input_by_id}, **kwargs
+        )
