@@ -239,7 +239,11 @@ class OpenBASConfigHelper:
     def get_conf(self, variable, is_number=None, default=None, required=None):
         result = None
         try:
-            result = self.__config_obj.get(variable) or default
+            result = (
+                self.__config_obj.get(variable)
+                if (self.__config_obj.get(variable) is not None)
+                else default
+            )
         except ConfigurationError:
             result = default
         finally:
