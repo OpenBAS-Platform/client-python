@@ -68,6 +68,14 @@ The standard `unittest` library is used for running the tests.
 $ python -m unittest
 ```
 
+## Code Coverage
+
+To run the tests and generate a code coverage report:
+
+```bash
+pytest --cov=. tests/
+```
+
 ## About
 
 OpenBAS is a product designed and developed by the company [Filigran](https://filigran.io).
