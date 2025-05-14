@@ -39,6 +39,7 @@ class ContractOutputType(str, Enum):
     PortsScan: str = "portscan"
     IPv4: str = "ipv4"
     IPv6: str = "ipv6"
+    CVE: str = "cve"
 
 
 class ExpectationType(str, Enum):
