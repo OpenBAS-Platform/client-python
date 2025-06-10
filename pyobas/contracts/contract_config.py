@@ -73,9 +73,9 @@ class ContractElement(ABC):
     key: str
     label: str
     type: str = field(default="", init=False)
-    mandatoryGroups: List[str] = None
-    mandatoryConditionField: str = None
-    mandatoryConditionValue: str = None
+    mandatoryGroups: List["ContractElement"] = field(default_factory=list)
+    mandatoryConditionFields: List["ContractElement"] = field(default_factory=list)
+    mandatoryConditionValues: List[str] = field(default_factory=list)
     linkedFields: List["ContractElement"] = field(default_factory=list)
     linkedValues: List[str] = field(default_factory=list)
     mandatory: bool = False
