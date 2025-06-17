@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 from pyobas import utils
 from pyobas.contracts.contract_utils import ContractCardinality, ContractVariable
@@ -73,11 +73,12 @@ class ContractElement(ABC):
     key: str
     label: str
     type: str = field(default="", init=False)
-    mandatoryGroups: List["ContractElement"] = field(default_factory=list)
-    mandatoryConditionFields: List["ContractElement"] = field(default_factory=list)
-    mandatoryConditionValues: List[str] = field(default_factory=list)
-    linkedFields: List["ContractElement"] = field(default_factory=list)
-    linkedValues: List[str] = field(default_factory=list)
+    mandatoryGroups: List[str] = field(default_factory=list)
+    mandatoryConditionFields: List[str] = field(default_factory=list)
+    mandatoryConditionValues: Dict[str, any] = field(default_factory=list)
+    visibleConditionFields: List[str] = field(default_factory=list)
+    visibleConditionValues: Dict[str, any] = field(default_factory=list)
+    linkedFields: List[str] = field(default_factory=list)
     mandatory: bool = False
     readOnly: bool = False
 
