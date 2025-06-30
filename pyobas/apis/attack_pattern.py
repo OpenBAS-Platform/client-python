@@ -14,9 +14,15 @@ class AttackPatternManager(RESTManager):
 
     @exc.on_http_error(exc.OpenBASUpdateError)
     def upsert(
-        self, attack_patterns: List[Dict[str, Any]], **kwargs: Any
+        self,
+        attack_patterns: List[Dict[str, Any]],
+        ignore_dependencies: bool = False,
+        **kwargs: Any,
     ) -> Dict[str, Any]:
-        data = {"attack_patterns": attack_patterns}
+        data = {
+            "attack_patterns": attack_patterns,
+            "ignore_dependencies": ignore_dependencies,
+        }
         path = f"{self.path}/upsert"
         result = self.openbas.http_post(path, post_data=data, **kwargs)
         return result

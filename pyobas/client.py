@@ -70,6 +70,7 @@ class OpenBAS:
         self.payload = apis.PayloadManager(self)
         self.security_platform = apis.SecurityPlatformManager(self)
         self.inject_expectation_trace = apis.InjectExpectationTraceManager(self)
+        self.tag = apis.TagManager(self)
 
     @staticmethod
     def _check_redirects(result: requests.Response) -> None:
