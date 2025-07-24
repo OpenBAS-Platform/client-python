@@ -126,7 +126,7 @@ class TestExpectation(unittest.TestCase):
 
         relevant_signature_types = [
             SignatureType(
-                label=SignatureTypes.SIG_TYPE_HOSTNAME,
+                label=SignatureTypes.SIG_TYPE_TARGET_HOSTNAME_ADDRESS,
                 match_type=MatchTypes.MATCH_TYPE_SIMPLE,
             )
         ]
@@ -251,7 +251,10 @@ class TestExpectation(unittest.TestCase):
                         "type": SignatureTypes.SIG_TYPE_PARENT_PROCESS_NAME,
                         "value": "parent.exe",
                     },
-                    {"type": SignatureTypes.SIG_TYPE_FILE_NAME, "value": "filename"},
+                    {
+                        "type": SignatureTypes.SIG_TYPE_SOURCE_IPV4_ADDRESS,
+                        "value": "231.102.107.38",
+                    },
                 ],
             },
             api_client=create_mock_api_client(),
@@ -263,7 +266,7 @@ class TestExpectation(unittest.TestCase):
             match_score=95,
         )
         file_name_signature_type = SignatureType(
-            label=SignatureTypes.SIG_TYPE_FILE_NAME,
+            label=SignatureTypes.SIG_TYPE_SOURCE_IPV4_ADDRESS,
             match_type=MatchTypes.MATCH_TYPE_FUZZY,
             match_score=95,
         )
@@ -294,8 +297,8 @@ class TestExpectation(unittest.TestCase):
                         "value": "parent.exe",
                     },
                     {
-                        "type": SignatureTypes.SIG_TYPE_FILE_NAME,
-                        "value": "some_file.odt",
+                        "type": SignatureTypes.SIG_TYPE_SOURCE_IPV4_ADDRESS,
+                        "value": "108.134.173.48",
                     },
                 ],
             },
@@ -308,7 +311,7 @@ class TestExpectation(unittest.TestCase):
             match_score=95,
         )
         file_name_signature_type = SignatureType(
-            label=SignatureTypes.SIG_TYPE_FILE_NAME,
+            label=SignatureTypes.SIG_TYPE_SOURCE_IPV4_ADDRESS,
             match_type=MatchTypes.MATCH_TYPE_FUZZY,
             match_score=95,
         )
