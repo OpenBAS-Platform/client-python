@@ -8,9 +8,8 @@ class MatchTypes(str, Enum):
 
 class SignatureTypes(str, Enum):
     SIG_TYPE_PARENT_PROCESS_NAME = "parent_process_name"
-    SIG_TYPE_HOSTNAME = "hostname"
-    SIG_TYPE_PROCESS_NAME = "process_name"
-    SIG_TYPE_COMMAND_LINE = "command_line"
-    SIG_TYPE_FILE_NAME = "file_name"
-    SIG_TYPE_IPV4 = "ipv4_address"
-    SIG_TYPE_IPV6 = "ipv6_address"
+    SIG_TYPE_SOURCE_IPV4_ADDRESS = "source_ipv4_address"
+    SIG_TYPE_SOURCE_IPV6_ADDRESS = "source_ipv6_address"
+    SIG_TYPE_TARGET_IPV4_ADDRESS = "target_ipv4_address"
+    SIG_TYPE_TARGET_IPV6_ADDRESS = "target_ipv6_address"
+    SIG_TYPE_TARGET_HOSTNAME_ADDRESS ="target_hostname_address"
