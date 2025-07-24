@@ -12,4 +12,4 @@ class SignatureTypes(str, Enum):
     SIG_TYPE_SOURCE_IPV6_ADDRESS = "source_ipv6_address"
     SIG_TYPE_TARGET_IPV4_ADDRESS = "target_ipv4_address"
     SIG_TYPE_TARGET_IPV6_ADDRESS = "target_ipv6_address"
-    SIG_TYPE_TARGET_HOSTNAME_ADDRESS ="target_hostname_address"
+    SIG_TYPE_TARGET_HOSTNAME_ADDRESS = "target_hostname_address"
