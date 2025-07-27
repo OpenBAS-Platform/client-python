@@ -1,5 +1,5 @@
 __author__ = "Filigran team"
-__copyright__ = "Copyright 2024 Filigran"
+__copyright__ = "Copyright 2025 Filigran"
 __email__ = "contact@filigran.io"
 __license__ = "Apache 2.0"
 __title__ = "python-openbas"

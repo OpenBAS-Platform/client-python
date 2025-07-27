@@ -48,7 +48,9 @@ class ExpectationType(str, Enum):
     article: str = "ARTICLE"
     challenge: str = "CHALLENGE"
     manual: str = "MANUAL"
-    technical: str = "TECHNICAL"
+    prevention: str = "PREVENTION"
+    detection: str = "DETECTION"
+    vulnerability: str = "VULNERABILITY"
 
 
 @dataclass
