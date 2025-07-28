@@ -14,6 +14,7 @@ class ExpectationTypeEnum(str, Enum):
 
     Detection = "DETECTION"
     Prevention = "PREVENTION"
+    Vulnerability = "VULNERABILITY"
     Other = "other"
 
     @classmethod
