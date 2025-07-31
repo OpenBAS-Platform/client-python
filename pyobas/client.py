@@ -59,6 +59,7 @@ class OpenBAS:
         self.organization = apis.OrganizationManager(self)
         self.injector = apis.InjectorManager(self)
         self.collector = apis.CollectorManager(self)
+        self.cve = apis.CveManager(self)
         self.inject = apis.InjectManager(self)
         self.document = apis.DocumentManager(self)
         self.kill_chain_phase = apis.KillChainPhaseManager(self)
