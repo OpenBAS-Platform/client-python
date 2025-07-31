@@ -3,6 +3,7 @@ from typing import Any, Dict
 from pyobas import exceptions as exc
 from pyobas.base import RESTManager, RESTObject
 
+
 class Cve(RESTObject):
     _id_attr="cve_id"
 
