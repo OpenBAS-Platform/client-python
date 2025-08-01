@@ -1,5 +1,6 @@
 from .attack_pattern import *  # noqa: F401,F403
 from .collector import *  # noqa: F401,F403
+from .cve import *  # noqa: F401,F403
 from .document import *  # noqa: F401,F403
 from .endpoint import *  # noqa: F401,F403
 from .inject import *  # noqa: F401,F403
