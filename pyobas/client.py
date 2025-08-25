@@ -8,7 +8,7 @@ from pyobas._version import __version__  # noqa: F401
 
 REDIRECT_MSG = (
     "pyobas detected a {status_code} ({reason!r}) redirection. You must update "
-    "your OpenBVAS URL to the correct URL to avoid issues. The redirection was from: "
+    "your OpenBAS URL to the correct URL to avoid issues. The redirection was from: "
     "{source!r} to {target!r}"
 )
 
@@ -202,25 +202,83 @@ class OpenBAS:
             if 200 <= result.status_code < 300:
                 return result.response
 
-            error_message = result.content
+            # Extract a meaningful error message from the server response
+            error_message: Any = None
+            
+            # First, try to get the raw text content
             try:
-                error_json = result.json()
-                for k in ("message", "error"):
-                    if k in error_json:
-                        error_message = error_json[k]
-            except (KeyError, ValueError, TypeError):
+                raw_text = result.content.decode('utf-8', errors='ignore').strip()
+                # If it's a simple text message (not JSON), use it directly
+                if raw_text and not raw_text.startswith('{') and not raw_text.startswith('['):
+                    error_message = raw_text[:500]
+            except Exception:
                 pass
+            
+            # If we don't have a message yet, try JSON parsing
+            if not error_message:
+                try:
+                    error_json = result.json()
+                    # Common fields
+                    if isinstance(error_json, dict):
+                        # First priority: look for a 'message' field (most specific)
+                        if "message" in error_json:
+                            error_message = error_json.get("message")
+                        elif "execution_message" in error_json:
+                            error_message = error_json.get("execution_message")
+                        elif "error" in error_json:
+                            err = error_json.get("error")
+                            if isinstance(err, dict) and "message" in err:
+                                error_message = err.get("message")
+                            elif err and err not in ['Internal Server Error', 'Bad Request', 'Not Found', 'Unauthorized', 'Forbidden']:
+                                # Only use 'error' field if it's not a generic HTTP status
+                                error_message = str(err)
+                        elif "errors" in error_json:
+                            errs = error_json.get("errors")
+                            if isinstance(errs, list) and errs:
+                                # Join any messages in the list
+                                messages = []
+                                for item in errs:
+                                    if isinstance(item, dict) and "message" in item:
+                                        messages.append(str(item.get("message")))
+                                    else:
+                                        messages.append(str(item))
+                                error_message = "; ".join(messages)
+                    elif isinstance(error_json, str):
+                        error_message = error_json
+                    # Fallback to serialized json if we still have nothing
+                    if not error_message:
+                        error_message = utils.json_dumps(error_json)[:500]
+                except Exception:
+                    # If JSON parsing fails, use the raw text we might have
+                    if not error_message:
+                        try:
+                            error_message = result.response.text[:500]
+                        except Exception:
+                            try:
+                                error_message = result.content.decode(errors="ignore")[:500]
+                            except Exception:
+                                error_message = str(result.content)[:500]
+            
+            # If still no message or a generic HTTP status, use status text
+            if not error_message or error_message == result.response.reason:
+                error_message = result.response.reason or "Unknown error"
 
             if result.status_code == 401:
                 raise exceptions.OpenBASAuthenticationError(
                     response_code=result.status_code,
-                    error_message=error_message,
+                    error_message=error_message or "Authentication failed",
                     response_body=result.content,
                 )
 
+            # Use the extracted error message, not the HTTP reason
+            final_error_message = error_message
+            if not final_error_message or final_error_message == result.response.reason:
+                # Only use HTTP reason as last resort
+                final_error_message = result.response.reason or "Unknown error"
+            
             raise exceptions.OpenBASHttpError(
                 response_code=result.status_code,
-                error_message=error_message,
+                error_message=final_error_message,
                 response_body=result.content,
             )
 
