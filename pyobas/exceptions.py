@@ -28,27 +28,31 @@ class OpenBASError(Exception):
     def __str__(self) -> str:
         # Start with the provided error message
         message = self.error_message
-        
+
         # List of generic HTTP status messages that indicate we should look deeper
         generic_messages = (
-            "Internal Server Error", "Bad Request", "Not Found",
-            "Unauthorized", "Forbidden", "Service Unavailable",
-            "Gateway Timeout", "Unknown error"
+            "Internal Server Error",
+            "Bad Request",
+            "Not Found",
+            "Unauthorized",
+            "Forbidden",
+            "Service Unavailable",
+            "Gateway Timeout",
+            "Unknown error",
         )
-        
+
         # Only try to extract from response body if message is truly generic
         # Don't override if we already have a specific error message
         if (
-            (not message or (message in generic_messages and len(message) < 30))
-            and self.response_body is not None
-        ):
+            not message or (message in generic_messages and len(message) < 30)
+        ) and self.response_body is not None:
             try:
                 import json
 
                 body = self.response_body.decode(errors="ignore")
                 data = json.loads(body)
                 extracted_msg = None
-                
+
                 if isinstance(data, dict):
                     # Try various common error fields
                     if "error" in data:
@@ -76,14 +80,14 @@ class OpenBASError(Exception):
                             extracted_msg = "; ".join(parts)
                         elif isinstance(errs, str):
                             extracted_msg = errs
-                
+
                 # Use extracted message if it's better than what we have
                 if extracted_msg and extracted_msg not in generic_messages:
                     message = str(extracted_msg)
                 elif not message:
                     # Last resort: use the raw body
                     message = body[:500]
-                    
+
             except json.JSONDecodeError:
                 # Not JSON, use raw text if we don't have a good message
                 if not message or message in generic_messages:
@@ -99,10 +103,10 @@ class OpenBASError(Exception):
         # Final fallback
         if not message:
             message = "Unknown error"
-        
+
         # Clean up the message - remove extra whitespace and newlines
         message = " ".join(message.split())
-            
+
         if self.response_code is not None:
             return f"{self.response_code}: {message}"
         return f"{message}"

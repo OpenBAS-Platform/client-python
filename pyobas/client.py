@@ -204,16 +204,20 @@ class OpenBAS:
 
             # Extract a meaningful error message from the server response
             error_message: Any = None
-            
+
             # First, try to get the raw text content
             try:
-                raw_text = result.content.decode('utf-8', errors='ignore').strip()
+                raw_text = result.content.decode("utf-8", errors="ignore").strip()
                 # If it's a simple text message (not JSON), use it directly
-                if raw_text and not raw_text.startswith('{') and not raw_text.startswith('['):
+                if (
+                    raw_text
+                    and not raw_text.startswith("{")
+                    and not raw_text.startswith("[")
+                ):
                     error_message = raw_text[:500]
             except Exception:
                 pass
-            
+
             # If we don't have a message yet, try JSON parsing
             if not error_message:
                 try:
@@ -229,7 +233,13 @@ class OpenBAS:
                             err = error_json.get("error")
                             if isinstance(err, dict) and "message" in err:
                                 error_message = err.get("message")
-                            elif err and err not in ['Internal Server Error', 'Bad Request', 'Not Found', 'Unauthorized', 'Forbidden']:
+                            elif err and err not in [
+                                "Internal Server Error",
+                                "Bad Request",
+                                "Not Found",
+                                "Unauthorized",
+                                "Forbidden",
+                            ]:
                                 # Only use 'error' field if it's not a generic HTTP status
                                 error_message = str(err)
                         elif "errors" in error_json:
@@ -255,10 +265,12 @@ class OpenBAS:
                             error_message = result.response.text[:500]
                         except Exception:
                             try:
-                                error_message = result.content.decode(errors="ignore")[:500]
+                                error_message = result.content.decode(errors="ignore")[
+                                    :500
+                                ]
                             except Exception:
                                 error_message = str(result.content)[:500]
-            
+
             # If still no message or a generic HTTP status, use status text
             if not error_message or error_message == result.response.reason:
                 error_message = result.response.reason or "Unknown error"
@@ -275,7 +287,7 @@ class OpenBAS:
             if not final_error_message or final_error_message == result.response.reason:
                 # Only use HTTP reason as last resort
                 final_error_message = result.response.reason or "Unknown error"
-            
+
             raise exceptions.OpenBASHttpError(
                 response_code=result.status_code,
                 error_message=final_error_message,
