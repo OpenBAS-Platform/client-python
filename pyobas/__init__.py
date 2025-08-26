@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.18.12"
+__version__ = "1.18.13"
 
 from pyobas._version import (  # noqa: F401
     __author__,
