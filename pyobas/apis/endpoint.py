@@ -15,12 +15,12 @@ class EndpointManager(RESTManager):
     _create_attrs = RequiredOptional(
         required=(
             "endpoint_hostname",
-            "endpoint_ips",
             "endpoint_platform",
             "endpoint_arch",
         ),
         optional=(
             "endpoint_mac_addresses",
+            "endpoint_ips",
             "asset_external_reference",
         ),
     )
