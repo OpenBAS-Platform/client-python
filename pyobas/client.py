@@ -197,7 +197,6 @@ class OpenBAS:
                 stream=streamed,
                 **opts,
             )
-
             self._check_redirects(result.response)
 
             if 200 <= result.status_code < 300:
@@ -225,25 +224,8 @@ class OpenBAS:
                     error_json = result.json()
                     # Common fields
                     if isinstance(error_json, dict):
-                        # First priority: look for a 'message' field (most specific)
-                        if "message" in error_json:
-                            error_message = error_json.get("message")
-                        elif "execution_message" in error_json:
-                            error_message = error_json.get("execution_message")
-                        elif "error" in error_json:
-                            err = error_json.get("error")
-                            if isinstance(err, dict) and "message" in err:
-                                error_message = err.get("message")
-                            elif err and err not in [
-                                "Internal Server Error",
-                                "Bad Request",
-                                "Not Found",
-                                "Unauthorized",
-                                "Forbidden",
-                            ]:
-                                # Only use 'error' field if it's not a generic HTTP status
-                                error_message = str(err)
-                        elif "errors" in error_json:
+                        # Check for nested validation errors first (more specific)
+                        if "errors" in error_json:
                             errs = error_json.get("errors")
                             if isinstance(errs, list) and errs:
                                 # Join any messages in the list
@@ -254,6 +236,52 @@ class OpenBAS:
                                     else:
                                         messages.append(str(item))
                                 error_message = "; ".join(messages)
+                            elif isinstance(errs, dict):
+                                # Handle nested validation errors from OpenBAS
+                                if "children" in errs:
+                                    # This is a validation error structure
+                                    validation_errors = []
+                                    children = errs.get("children", {})
+                                    for field, field_errors in children.items():
+                                        if (
+                                            isinstance(field_errors, dict)
+                                            and "errors" in field_errors
+                                        ):
+                                            field_error_list = field_errors.get(
+                                                "errors", []
+                                            )
+                                            if field_error_list:
+                                                for err_msg in field_error_list:
+                                                    validation_errors.append(
+                                                        f"{field}: {err_msg}"
+                                                    )
+                                    if validation_errors:
+                                        base_msg = error_json.get(
+                                            "message", "Validation Failed"
+                                        )
+                                        error_message = f"{base_msg}: {'; '.join(validation_errors)}"
+                                elif isinstance(errs, str):
+                                    error_message = errs
+
+                        # If no error message from errors field, check other fields
+                        if not error_message:
+                            if "message" in error_json:
+                                error_message = error_json.get("message")
+                            elif "execution_message" in error_json:
+                                error_message = error_json.get("execution_message")
+                            elif "error" in error_json:
+                                err = error_json.get("error")
+                                if isinstance(err, dict) and "message" in err:
+                                    error_message = err.get("message")
+                                elif err and err not in [
+                                    "Internal Server Error",
+                                    "Bad Request",
+                                    "Not Found",
+                                    "Unauthorized",
+                                    "Forbidden",
+                                ]:
+                                    # Only use 'error' field if it's not a generic HTTP status
+                                    error_message = str(err)
                     elif isinstance(error_json, str):
                         error_message = error_json
                     # Fallback to serialized json if we still have nothing

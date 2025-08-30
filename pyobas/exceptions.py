@@ -39,6 +39,7 @@ class OpenBASError(Exception):
             "Service Unavailable",
             "Gateway Timeout",
             "Unknown error",
+            "Validation Failed",
         )
 
         # Only try to extract from response body if message is truly generic
@@ -78,6 +79,37 @@ class OpenBASError(Exception):
                                 else:
                                     parts.append(str(item))
                             extracted_msg = "; ".join(parts)
+                        elif isinstance(errs, dict):
+                            # Handle nested validation errors structure
+                            if "children" in errs:
+                                validation_errors = []
+                                children = errs.get("children", {})
+                                for field, field_errors in children.items():
+                                    if (
+                                        isinstance(field_errors, dict)
+                                        and "errors" in field_errors
+                                    ):
+                                        field_error_list = field_errors.get(
+                                            "errors", []
+                                        )
+                                        if field_error_list:
+                                            for err_msg in field_error_list:
+                                                validation_errors.append(
+                                                    f"{field}: {err_msg}"
+                                                )
+                                if validation_errors:
+                                    base_msg = data.get("message", "Validation Failed")
+                                    extracted_msg = (
+                                        f"{base_msg}: {'; '.join(validation_errors)}"
+                                    )
+                            else:
+                                # Try to get any string representation
+                                parts = []
+                                for key, value in errs.items():
+                                    if value:
+                                        parts.append(f"{key}: {value}")
+                                if parts:
+                                    extracted_msg = "; ".join(parts)
                         elif isinstance(errs, str):
                             extracted_msg = errs
 
